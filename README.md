@@ -4,6 +4,8 @@ Browser userscripts for greasemonkey
 
 ## Reddit Context
 
+[Github](https://github.com/srsutherland/Userscripts/blob/master/reddit-context.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/407164-reddit-context)
+
 Automatically add context to reddit permalinks
 
 ## Wikipedia Drug invert
