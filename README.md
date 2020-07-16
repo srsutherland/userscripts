@@ -2,6 +2,10 @@
 
 Browser userscripts for greasemonkey
 
+## Reddit Context
+
+Automatically add context to reddit permalinks
+
 ## Wikipedia Drug invert
 
 [Github](https://github.com/srsutherland/Userscripts/blob/master/wiki-drug-invert.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/396052-wikipedia-drug-invert)
