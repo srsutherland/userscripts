@@ -4,15 +4,15 @@ Browser userscripts for greasemonkey
 
 ## Reddit Context
 
-[Github](https://github.com/srsutherland/Userscripts/blob/master/reddit-context.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/407164-reddit-context)
+[Github](https://github.com/srsutherland/userscripts/blob/master/reddit-context.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/407164-reddit-context)
 
 Automatically add context to reddit permalinks
 
 ## Wikipedia Drug invert
 
-[Github](https://github.com/srsutherland/Userscripts/blob/master/wiki-drug-invert.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/396052-wikipedia-drug-invert)
+[Github](https://github.com/srsutherland/userscripts/blob/master/wiki-drug-invert.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/396052-wikipedia-drug-invert)
 
-A simple script to invert chemical skeletons on wikipedia pages that use `{{Template:drugbox}}`, for use with Dark Reader and similar extensions
+A simple script to invert chemical skeletons on wikipedia pages that use `{{Template:drugbox}}` or `{{Template:Chembox}}`, for use with Dark Reader and similar extensions
 
 Before:
 
