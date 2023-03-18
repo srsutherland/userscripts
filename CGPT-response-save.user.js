@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChatGPT Response Saver
 // @namespace    https://srsutherland.github.io/flickr-twin/
-// @version      2023.03.15
+// @version      2023.03.18
 // @description  Preserve ChatGPT responses
 // @author       srsutherland
 // @match        https://chat.openai.com/chat*
@@ -12,24 +12,13 @@
 // ==/UserScript==
 
 window.responses = {}
+const extension = {}
 // eslint-disable-next-line no-undef
 if (unsafeWindow) {
     // eslint-disable-next-line no-undef
     unsafeWindow.responses = window.responses
-}
-
-function defer() {
-	var res, rej;
-
-	var promise = new Promise((resolve, reject) => {
-		res = resolve;
-		rej = reject;
-	});
-
-	promise.resolve = res;
-	promise.reject = rej;
-
-	return promise;
+    // eslint-disable-next-line no-undef
+    unsafeWindow.extension = extension
 }
 
 class ChatGPTResponse {
@@ -52,6 +41,7 @@ class ChatGPTResponse {
             const promptDiv = promptGroup.querySelector(".whitespace-pre-wrap")
             this.prompt = promptDiv?.innerHTML
             this.promptText = promptDiv?.innerText
+            this.key = unixTimeInBase64() + ": " + this.promptText
         }
         this.updateFromStream();
         //set update interval
@@ -70,14 +60,14 @@ class ChatGPTResponse {
     updateFromStream() {
         const stream = this.div;
         this.streamText = stream.innerText || stream.textContent;
-        const twelveWords = this.streamText.match(/(\w+\W+){12}/)
-        if (twelveWords) {
-            const deferred = this.key
-            this.key = twelveWords[0]
-            if (deferred.resolve) {
-                deferred.resolve(this.key)
-            }
-        }
+        // const twelveWords = this.streamText.match(/(\w+\W+){12}/)
+        // if (twelveWords) {
+        //     const deferred = this.key
+        //     this.key = twelveWords[0]
+        //     if (deferred.resolve) {
+        //         deferred.resolve(this.key)
+        //     }
+        // }
         if (stream.innerHTML.length > (this.content?.length || 0)) {
             this.content = stream.innerHTML
         }
@@ -94,8 +84,10 @@ class ChatGPTResponse {
         delete window.responses[this.key]
     }
 }
+extension.ChatGPTResponse = ChatGPTResponse
 
 const queue = []
+extension.queue = queue
 
 const saveResponse = async () => {
     const stream = document.querySelector(".result-streaming");
@@ -109,39 +101,25 @@ const saveResponse = async () => {
         window.responses[key] = response
     }
 }
-const saveResponseSimple = () => {
-    const r = window.responses
-    const stream = document.querySelector(".result-streaming")
-    if (!stream) return;
-    const streamText = stream.innerText || stream.textContent;
-    if (streamText.match(/(\w+\W+){12}/)) {
-        const key = streamText.match(/(\w+\W+){12}/)[0]
-        if (stream.innerHTML.length > (r[key]?.length || 0)) {
-            r[key] = stream.innerHTML
-        }
-    }
-}
+extension.saveResponse = saveResponse
 
 let interval_id = null
 const stopSaving = () => {
     window.clearInterval(interval_id);
     interval_id = null;
 }
-// eslint-disable-next-line no-unused-vars
 const saveAllResponses = () => {
     stopSaving()
     interval_id = window.setInterval(saveResponse, 500)
 }
-// eslint-disable-next-line no-unused-vars
-const saveAllResponsesSimple = () => {
-    stopSaving()
-    interval_id = window.setInterval(saveResponseSimple, 200)
-}
 
 // eslint-disable-next-line no-unused-vars
-const displayAll = () => {
+const displayAll = (responseList) => {
     const win = window.open()
-    const chatboxes = Object.values(window.responses).map(
+    responseList instanceof Event ?
+        responseList = Object.values(window.responses) :
+        responseList ??= Object.values(window.responses)
+    const chatboxes = responseList.map(
         r => 
             (r.prompt ? `<div class="chatbox prompt">${r.prompt || r}</div>` : "") +
             `<div class="chatbox">${r.content || r}</div>`
@@ -149,8 +127,8 @@ const displayAll = () => {
     win.document.body.innerHTML = chatboxes;
     win.document.head.innerHTML = `<style>
         .chatbox {
-            border:1px solid grey; 
-            margin: 1em; 
+            border:1px solid grey;
+            margin: 1em;
             padding: 1em
         }
         body {
@@ -180,6 +158,7 @@ const displayAll = () => {
         if (
             first_hundo.match("Sorry") || 
             first_hundo.match("sorry") || 
+            first_hundo.match("I apologize") ||
             first_hundo.match("I cannot") || 
             first_hundo.match("I can't")
         ) {
@@ -202,6 +181,7 @@ const displayAll = () => {
         win.document.body.insertAdjacentElement("beforeend", saveButton)
     })
 }
+extension.displayAll = displayAll
 
 const addButtons = () => {
     const playPause = document.createElement("button")
@@ -241,6 +221,34 @@ const addButtons = () => {
             }
         </style>`
     )
+}
+
+//helper functions
+
+function unixTimeInBase64() {
+    const unixTime = Math.floor(Date.now() / 1000);
+    const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let result = '';
+    
+    for (let i = 0; i < 4; i++) {
+      result = base64Chars.charAt(unixTime >> (6 * i) & 0x3F) + result;
+    }
+    
+    return result;
+}
+
+function defer() {
+	var res, rej;
+
+	var promise = new Promise((resolve, reject) => {
+		res = resolve;
+		rej = reject;
+	});
+
+	promise.resolve = res;
+	promise.reject = rej;
+
+	return promise;
 }
 
 console.log("loaded extension")
