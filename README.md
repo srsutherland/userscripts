@@ -14,10 +14,14 @@ Automatically add context to reddit permalinks
 
 A simple script to invert chemical skeletons on wikipedia pages that use `{{Template:drugbox}}` or `{{Template:Chembox}}`, for use with Dark Reader and similar extensions
 
-Before:
+| Before: | After |
+| ------- | ----- |
+| ![before](media/Drug_before.png) | ![after](media/Drug_after.png)|
 
-![before](https://greasyfork.org/system/screenshots/screenshots/000/018/928/original/Screenshot_2020-02-04_at_12.49.58_AM.png?1580806265)
+## RPGbot 5etools linker
 
-After:
+Links all the feature/spell/etc ratings directly to a query for them on 5e.tools
 
-![after](https://greasyfork.org/system/screenshots/screenshots/000/018/929/original/Screenshot_2020-02-04_at_12.50.31_AM.png?1580806265)
+## CGPT response saver
+
+Helps you conveniently collect and display outputs (even those that OpenAI doesn't want you to generate) when playing around with prompts in ChatGPT.
