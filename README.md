@@ -24,6 +24,12 @@ A simple script to invert chemical skeletons on wikipedia pages that use `{{Temp
 
 Links all the feature/spell/etc ratings directly to a query for them on 5e.tools
 
+## Wordle Suggester
+
+[Github](https://github.com/srsutherland/userscripts/raw/master/wordle-suggest.user.js)
+
+Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
+
 ## CGPT response saver
 
 [Github](https://github.com/srsutherland/userscripts/raw/master/CGPT-response-save.user.js)
