@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         ChatGPT Response Saver
-// @namespace    https://srsutherland.github.io/flickr-twin/
-// @version      2023.03.18
+// @namespace    https://srsutherland.dev
+// @version      2023.03.22
 // @description  Preserve ChatGPT responses
 // @author       srsutherland
 // @match        https://chat.openai.com/chat*
+// @icon         https://chat.openai.com/favicon-32x32.png
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_listValues
