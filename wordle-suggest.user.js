@@ -1,15 +1,20 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2023.03.22
+// @version      2023.05.04
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
+// @match        https://multiwordle.org/multi/*
 // @icon         https://www.nytimes.com/games-assets/v2/metadata/wordle-favicon.ico?v=v2303221300
 // ==/UserScript==
 
 (function() {
     'use strict';
+    // Chrome console aliases
+    const $ = (s) => document.querySelector(s)
+    const $$ = (s) => Array.from(document.querySelectorAll(s))
+
     const getLetters = () =>
         Array.from(document.querySelectorAll(`.Key-module_key__kchQI`))
             .filter(k => !k.ariaLabel?.match("absent"))
@@ -53,10 +58,45 @@
         // No triple letters
         words = words.filter(w => !w.match(/(\w)\1\1/))
         // Add function to filter out impossible words
-        words.isNotImpossible = isNotImpossible
+        words.isNotImpossible = () => words.filter(isNotImpossible)
         return words
     }
     unsafeWindow.getLetters = getLetters
     unsafeWindow.getVowels = getVowels
     unsafeWindow.isNotImpossible = isNotImpossible
+
+    // MultiWordle //
+    
+    if (window.location.href.match("multiwordle")) {
+        unsafeWindow.solve = () => {
+            const getAlpha = ls => [...ls].filter(k => k.innerText.match(/^\w$/) && !k.classList.contains("c-hahkls-idbAaef-css")).map(k => k.innerText)
+            const letters = getAlpha($$(".c-hahkls"))
+            const replaceFromW = (s, w) => w.map(a => s.replace("_", a))
+            const replaceNext = a => a.map(s => replaceFromW(s, letters)).flat()
+            // Starting word from green
+            const css_selector_known_letters = ".c-hLErVa-ijlIsW-focused-true .c-eOfRZm:nth-of-type(2) .c-EbAgF.c-cyjHTc"
+            let words = [$$(css_selector_known_letters).map(k => k.innerText ? k.innerText : "_").join("")]
+            while (words[0].match("_")) {
+                words = replaceNext(words)
+            }
+            const yellows = $$(".c-hLErVa-ijlIsW-focused-true .c-jjhHwW").map(div => getAlpha(div.children))
+            const yellow_position_regexes = yellows.map((ls, i) => new RegExp([0,1,2,3,4].map(j => i == j ? `[${ls.join("")}]` : ".").join("")))
+            
+            words = words.filter(w => 
+                // Has at least one of each yellow
+                yellows.flat().every(l => w.match(l)) &&
+                // Doesn't have the yellows in the wrong place
+                !yellow_position_regexes.some(r => w.match(r)) &&
+                // Q needs a U
+                !(w.match("Q[^U]")) &&
+                // Need at least one vowel
+                w.match(/[AEIOUY]/) &&
+                // No triple letters
+                !w.match(/(\w)\1\1/)
+            )
+            // Add function to filter out impossible words
+            words.isNotImpossible = () => words.filter(isNotImpossible)
+            return words
+        }
+    }
 })();
