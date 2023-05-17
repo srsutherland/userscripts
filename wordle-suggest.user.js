@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2023.05.17
+// @version      2023.05.17.1
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -26,29 +26,21 @@
     const isNotImpossible = (w) => !impossiblePairs.some(p => (w.match(p)))
     
     // Scrambles class for chaining filters
-    class Scrambles {
-        constructor(list) {
-            this.list = list
-            // list must be an array of strings
-            if (!this.list?.every || !this.list.every(x => typeof x == 'string')) {
-                throw "Scramble list must be an array of strings"
-            }
-        }
-
+    class Scrambles extends Array {
         filter(f) {
-            return new Scrambles(this.list.filter(f))
-        }
-        
-        map(f) {
-            return new Scrambles(this.list.map(f))
+            return Scrambles.from(super.filter(f))
         }
 
         flat() {
-            return new Scrambles(this.list.flat())
+            return Scrambles.from(super.flat())
+        }
+        
+        map(f) {
+            return Scrambles.from(super.map(f))
         }
 
         flatMap(f) {
-            return new Scrambles(this.list.flatMap(f))
+            return Scrambles.from(super.flatMap(f))
         }
 
         // Takes strings/regexes or lists of strings/regexes
@@ -79,6 +71,7 @@
             return this.filter(isNotImpossible)
         }
     }
+    unsafeWindow.Scrambles = Scrambles
 
     const getLetters = () =>
         Array.from(document.querySelectorAll(`.Key-module_key__kchQI`))
@@ -116,7 +109,7 @@
         // No triple letters
         words = words.filter(w => !w.match(/(\w)\1\1/))
 
-        words = new Scrambles(words)
+        words = Scrambles.from(words)
         return words
     }
     unsafeWindow.getLetters = getLetters
@@ -153,7 +146,7 @@
                 !w.match(/(\w)\1\1/)
             )
 
-            words = new Scrambles(words)
+            words = Scrambles.from(words)
             return words
         }
     }
