@@ -6,6 +6,7 @@
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
 // @match        https://multiwordle.org/multi/*
+// @match        https://multiwordle.org
 // @icon         https://www.nytimes.com/games-assets/v2/metadata/wordle-favicon.ico?v=v2303221300
 // ==/UserScript==
 
