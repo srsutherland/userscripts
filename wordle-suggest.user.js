@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2023.05.18
+// @version      2023.05.23
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -70,6 +70,13 @@
         // Not not impossible === possible
         isPossible() {
             return this.filter(isNotImpossible)
+        }
+
+        // Return a count of each letter in the list
+        count() {
+            const counts = {}
+            this.forEach(w => [...w].forEach(l => counts[l] = (counts[l] || 0) + 1))
+            return counts
         }
     }
     unsafeWindow.Scrambles = Scrambles
