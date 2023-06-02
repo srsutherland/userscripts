@@ -1,0 +1,33 @@
+! Reddit
+! 2022-02-25 https://old.reddit.com
+old.reddit.com##.listingsignupbar.infobar
+! 2023-02-11 https://old.reddit.com
+old.reddit.com##.seo-comments-recommendations.spacer
+old.reddit.com##.spacer.seo-comments
+old.reddit.com##.spacer#bottom-comments
+
+! Twitter
+! 2022-03-22 https://twitter.com
+twitter.com##.r-184en5c.r-ipm5af.r-zchlnj.r-u8s1d.r-1d2f490
+
+! Substack
+! 2022-08-03
+substack.com##.subscription-widget-wrap
+substack.com##.subscription-widget-wrap+div hr
+##.subscribe-dialog
+##.subscribe-dialog-scroll-modal-scroll-capture
+##.subscription-widget-wrap
+##.subscription-widget-wrap+div hr
+! might need to disable this next one?
+##.default-intro-popup.intro-popup
+
+! Misc news sites
+! 2022-05-03 https://www.cnbc.com
+www.cnbc.com###cnbc-video-player
+! 2022-10-14 https://gizmodo.com
+gizmodo.com##.sticky-on.js_sidebar_sticky_container.jkLlnx.sc-1ez0oyg-0
+! 2022-11-16 https://www.nytimes.com
+www.nytimes.com###standalone-footer > div
+
+! ChatGPT moderation
+https://chat.openai.com/backend-api/moderations
