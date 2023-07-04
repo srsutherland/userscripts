@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.03
+// @version      2023.07.04.1
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -119,7 +119,7 @@
         }
 
         // Alias for when I forget which method goes to which collection because JS has no consistency
-        Array.has = (item) => {
+        Array.prototype.has = (item) => {
             console.warn("Arrays us Array.includes()")
             return this.includes(item)
         }
