@@ -1,6 +1,12 @@
 # Userscripts
 
-Browser userscripts for greasemonkey
+Browser userscripts for ~~greasemonkey~~ tampermonkey or violentmonkey
+
+## Sean's hacker tools
+
+[Github](https://github.com/srsutherland/userscripts/raw/master/srs-hacker-tools.user.js)
+
+A collection of functions and modifications to JS collections to make the language more convenient for ad hoc scripting, data manipulation, and [hacking](http://www.catb.org/jargon/html/H/hack.html).
 
 ## Reddit Context
 
