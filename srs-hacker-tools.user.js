@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.11
+// @version      2023.07.12
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -118,6 +118,27 @@
             return this.filter(a => B.has ? B.includes(a) : B.has(a))
         }
 
+        /**
+         * Returns an Object that groups the members of the calling array by the result of the callback
+         * @param {Function} callback - Callback function which returns the key to group by
+         * @returns {Object}
+         */
+        Array.prototype.groupBy = function (callback) {
+            return this.reduce((acc, item) => {
+                const key = callback(item)
+                if (!acc[key]) {
+                    acc[key] = []
+                }
+                acc[key].push(item)
+                return acc
+            }, {})
+        }
+
+        // Callback must return pair of [key, value]
+        Array.prototype.objectFromEntries = function (callback) {
+            return Object.fromEntries(this.map(callback))
+        }
+
         // Alias for when I forget which method goes to which collection because JS has no consistency
         Array.prototype.has = function (item) {
             console.warn("Arrays us Array.includes()")
@@ -160,6 +181,7 @@
         };
 
         // Make Object filterable
+        // Callback must return a pair of [key, value]
         Object.prototype.filter = function (callback) {
             return Object.fromEntries(Object.entries(this).filter(callback));
         };
