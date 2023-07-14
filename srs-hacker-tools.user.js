@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.12
+// @version      2023.07.14
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -139,6 +139,11 @@
             return Object.fromEntries(this.map(callback))
         }
 
+        // As above, but callback returns key; value unchanged
+        Array.prototype.keyBy = function (callback) {
+            return this.objectFromEntries(item => [callback(item), item])
+        }
+
         // Alias for when I forget which method goes to which collection because JS has no consistency
         Array.prototype.has = function (item) {
             console.warn("Arrays us Array.includes()")
@@ -181,9 +186,14 @@
         };
 
         // Make Object filterable
-        // Callback must return a pair of [key, value]
+        // Callback is ([k, v]) => boolean
         Object.prototype.filter = function (callback) {
             return Object.fromEntries(Object.entries(this).filter(callback));
+        };
+
+        // Callback is ([k, v]) => keyToGroupBy
+        Object.prototype.groupBy = function (callback) {
+            return Object.entries(this).groupBy(callback);
         };
 
         // Custom Iterator for Number Prototype in JS
