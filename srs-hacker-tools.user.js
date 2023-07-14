@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.14
+// @version      2023.07.14.icon
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
+// @icon         https://avatars.githubusercontent.com/u/12262958?v=4
 // @grant        none
 // ==/UserScript==
 
