@@ -1,6 +1,6 @@
 # Userscripts
 
-Browser userscripts for ~~Greasemonkey~~ [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/). Istall links go to the raw *.user.js* files.
+Browser userscripts for ~~Greasemonkey~~ [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/). Install links go to the raw *.user.js* files.
 
 ## Sean's hacker tools
 
