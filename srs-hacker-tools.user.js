@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.14.icon
+// @version      2023.07.19
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -101,6 +101,10 @@
 
     // A bunch of things which modify the prototype of Array and Object
     SRS.apply = () => {
+        ///////////////////////
+        //// Array Methods ////
+        ///////////////////////
+
         /**
          * Returns a new Array containing the members of the calling array which are not in B
          * @param {Array} B
@@ -159,6 +163,10 @@
         Array.prototype.sortAscByKey = function (key) { return this.sort(SRS.sorts.ascByKey(key)) }
         Array.prototype.sortDescByKey = function (key) { return this.sort(SRS.sorts.descByKey(key)) }
 
+        /////////////////////////
+        //// Object Methods /////
+        /////////////////////////
+        
         /**
          * Copy Object.keys(), Object.values(), and Object.entries() to prototype 
          * for convenience when playing with data
@@ -196,6 +204,61 @@
         Object.prototype.groupBy = function (callback) {
             return Object.entries(this).groupBy(callback);
         };
+
+        /////////////////////////
+        //// Promise Methods ////
+        /////////////////////////
+
+        // Wait a number of milliseconds and then resolve the promise with the original value
+        Promise.prototype.wait = function (ms) {
+            return this.then(
+                value => new Promise(resolve => setTimeout(() => resolve(value), ms))
+            );
+        };
+
+        // Store the value of the promise in a global variable
+        Promise.prototype.store = function (name) {
+            return this.then(value => window[name] = value);
+        };
+
+        // Log the value of the promise
+        Promise.prototype.log = function () {
+            return this.then(value => console.log(value) || value);
+        };
+
+        // Fetch methods:
+
+        // .text() the response
+        Promise.prototype.text = function () {
+            return this.then(response => {
+                if (!(response instanceof Response)) {
+                    throw new TypeError("Promise.text() requires a Response object (was previous item in chain a fetch?)");
+                }
+                return response.text()
+            });
+        }
+
+        // .json() the response
+        Promise.prototype.json = function () {
+            return this.then(response => {
+                if (!(response instanceof Response)) {
+                    throw new TypeError("Promise.json() requires a Response object (was previous item in chain a fetch?)");
+                }
+                return response.json()
+            });
+        }
+
+        // return a document from the response
+        Promise.prototype.asDocument = function () {
+            return this.text().then(text => {
+                const parser = new DOMParser();
+                return parser.parseFromString(text, "text/html");
+            });
+        }
+
+        ////////////////
+        //// Other /////
+        ////////////////
 
         // Custom Iterator for Number Prototype in JS
         // https://stackoverflow.com/questions/51608130/custom-iterator-for-number-prototype-in-js
