@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2023.05.23
+// @version      2023.06.14
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -15,6 +15,20 @@
     // Chrome console aliases
     const $ = (s) => document.querySelector(s)
     const $$ = (s) => Array.from(document.querySelectorAll(s))
+
+    const noWordleBotPaywall = () => {
+        if (window.location.match("wordle-bot.html")) {
+            $('#site-content').style.position = "unset"
+            // above won't work if the page is still loading, so put it in head > style
+            document.head.innerHTML += `<style id="noWordleBotPaywall">#site-content { position: unset !important; }</style>`
+            return true
+        }
+        return false
+    }
+    if (noWordleBotPaywall()) return;
+    // Add a listener for window.location for soft navigation
+    let lastLocation = window.location.href
+
 
     // Letter pairs that don't appear in English words
     const impossiblePairs = [
@@ -127,6 +141,14 @@
     // MultiWordle //
     
     if (window.location.href.match("multiwordle")) {
+        const getWordLists = async () => {
+            const jsText = await fetch("https://multiwordle.org/static/js/main.554356e2.js").then(r => r.text())
+            const wordListRegex = /\w+=JSON.parse\('(\[("[\w*]{5}",?)+\])'\)/ig // 1st group is the word list string
+            const wordLists = [...jsText.matchAll(wordListRegex)].map(m => JSON.parse(m[1]))
+            return wordLists
+        }
+        const getAlpha = ls => [...ls].filter(k => k.innerText.match(/^\w$/) && !k.classList.contains("c-hahkls-idbAaef-css")).map(k => k.innerText)
+        const getYellows = () => $$(".c-hLErVa-ijlIsW-focused-true .c-jjhHwW").map(div => getAlpha(div.children))
         unsafeWindow.solve = () => {
             const getAlpha = ls => [...ls].filter(k => k.innerText.match(/^\w$/) && !k.classList.contains("c-hahkls-idbAaef-css")).map(k => k.innerText)
             const letters = getAlpha($$(".c-hahkls"))
