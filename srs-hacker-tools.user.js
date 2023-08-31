@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.08.31
+// @version      2023.08.31.1
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -26,11 +26,12 @@
 
     SRS.download = (text, filename, autodate=true) => {
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+        const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
         if (filename === undefined) {
-            SRS.fileSafeDatestring()
+            filename = datestring;
         } else {
             if (autodate) {
-                filename += "-" + SRS.fileSafeDatestring()
+                filename += "-" + datestring;
             }
         }
         const downloadAnchorNode = document.createElement('a');
@@ -50,10 +51,10 @@
             }
         }
         if (autodate) {
-            filename += "-" + SRS.fileSafeDatestring()
+            filename += "-" + (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
         }
         const dataStr = "data:text/json;charset=utf-8," + 
-            encodeURIComponent(JSON.stringify(exportObj));
+            encodeURIComponent(JSON.stringify(exportObj, null, 2));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href",     dataStr);
         downloadAnchorNode.setAttribute("download", filename + ".json");
