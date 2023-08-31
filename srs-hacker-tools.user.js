@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.07.19.1
+// @version      2023.08.31
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -99,7 +99,7 @@
     SRS.sorts.ascByKey = (key) => (a, b) => a[key] - b[key];
     SRS.sorts.descByKey = (key) => (a, b) => b[key] - a[key];
 
-    // A bunch of things which modify the prototype of Array and Object
+    // A bunch of things which modify the prototype of Array and Object (and others)
     SRS.apply = () => {
         ///////////////////////
         //// Array Methods ////
@@ -163,6 +163,22 @@
         Array.prototype.sortAscByKey = function (key) { return this.sort(SRS.sorts.ascByKey(key)) }
         Array.prototype.sortDescByKey = function (key) { return this.sort(SRS.sorts.descByKey(key)) }
 
+        ////////////////////////////
+        //// Array-like Methods ////
+        ////////////////////////////
+
+        // Convert Array-like objects to Arrays
+
+        // Convert NodeList to Array
+        NodeList.prototype.toArray = function () {
+            return Array.from(this);
+        };
+
+        // Convert HTMLCollection to Array
+        HTMLCollection.prototype.toArray = function () {
+            return Array.from(this);
+        };
+
         /////////////////////////
         //// Object Methods /////
         /////////////////////////
@@ -198,6 +214,18 @@
         // Callback is ([k, v]) => boolean
         Object.prototype.filter = function (callback) {
             return Object.fromEntries(Object.entries(this).filter(callback));
+        };
+
+        // Make Object filterable, using the keys
+        // Callback is (k) => boolean
+        Object.prototype.filterByKey = function (callback) {
+            return Object.fromEntries(Object.entries(this).filter(([k, v]) => callback(k)));
+        };
+
+        // Make Object filterable using the values
+        // Callback is (v) => boolean
+        Object.prototype.filterByValue = function (callback) {
+            return Object.fromEntries(Object.entries(this).filter(([k, v]) => callback(v)));
         };
 
         // Callback is ([k, v]) => keyToGroupBy
