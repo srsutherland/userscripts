@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.08.31.1
+// @version      2023.09.27
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -220,18 +220,28 @@
         // Make Object filterable, using the keys
         // Callback is (k) => boolean
         Object.prototype.filterByKey = function (callback) {
-            return Object.fromEntries(Object.entries(this).filter(([k, v]) => callback(k)));
+            return Object.fromEntries(Object.entries(this).filter(([k, _v]) => callback(k)));
         };
 
         // Make Object filterable using the values
         // Callback is (v) => boolean
         Object.prototype.filterByValue = function (callback) {
-            return Object.fromEntries(Object.entries(this).filter(([k, v]) => callback(v)));
+            return Object.fromEntries(Object.entries(this).filter(([_k, v]) => callback(v)));
         };
 
         // Callback is ([k, v]) => keyToGroupBy
         Object.prototype.groupBy = function (callback) {
             return Object.entries(this).groupBy(callback);
+        };
+
+        // Generic "PipeTo" function
+        // Takes a function and applies it to the object
+        // If given a string, it will look for a function with that name in the object's constructor
+        Object.prototype.pipeTo = function (func) {
+            if (typeof func === "string") {
+                func = this.constructor.prototype[func];
+            }
+            return func(this);
         };
 
         /////////////////////////
