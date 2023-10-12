@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.09.27
+// @version      2023.10.11
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -76,6 +76,74 @@
         if (!files) { return }
         const fileText = await files[0].text();
         return JSON.parse(fileText);
+    }
+
+    SRS.elementToString = function elementToString(element, indent = 2, indentLevel = 0) {
+        let output = '';
+        const padding = ' '.repeat(indent * indentLevel);
+    
+        // Clone the element and get its outer HTML, then split to get opening and closing tags
+        const [openingTag, closingTag] = element.cloneNode().outerHTML.split(/(?=<\/)/); // lookahead trick
+    
+        const computedStyle = window.getComputedStyle(element);
+        let isInline = computedStyle.display === 'inline';
+        // Or if it's a <p> element with no attributes
+        isInline = isInline || (element.tagName === 'P' && element.attributes.length === 0);
+        // If inline with single text node, append the entire outer HTML
+        const onlyChildIsText = element.childNodes.length === 1 && element.childNodes[0].nodeType === 3;
+        const writeAsInline = isInline && onlyChildIsText;
+        const onlyChildIsWhitespace = onlyChildIsText && !element.childNodes[0].nodeValue?.trim();
+    
+        if (writeAsInline || element.childNodes.length === 0) {
+            output += padding + element.outerHTML;
+        } else if (onlyChildIsWhitespace) {
+            output += padding + openingTag + ' ' + closingTag;
+        } else {
+            // Otherwise, process child nodes recursively with increased indentation
+            output += padding + openingTag
+            element.childNodes.forEach(child => {
+                if (child.nodeType === 1) {  // Element node
+                    output += '\n' + elementToString(child, indent, indentLevel + 1);
+                } else if (child.nodeType === 3 && child.nodeValue.trim()) {  // Text node with non-whitespace content
+                    output += '\n' + padding + ' '.repeat(indent) + child.nodeValue.trim();
+                }
+            });
+            // Append closing tag (if exists) in a new line with the current indentation
+            if (closingTag) {
+                output += '\n' + padding + closingTag;
+            }
+        }
+    
+        return output;
+    }
+
+    SRS.downloadHtml = (element, filename, autodate=true) => {
+        const datestring = SRS.fileSafeDatestring();
+        if (filename === undefined) {
+            if (element.id) {
+                filename = element.id;
+            } else if (element.classList.length > 0) {
+                filename = element.classList.join(".")
+            }
+        }
+        if (filename === undefined) {
+            filename = datestring;
+        } else {
+            if (filename.endsWith(".html")) {
+                filename = filename.slice(0, -5)
+            }
+            if (autodate) {
+                filename += "-" + datestring;
+            }
+        }
+        const text = SRS.elementToString(element);
+        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", filename + ".html");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
     }
 
     SRS.range = function* (start, stop, step=1) {
