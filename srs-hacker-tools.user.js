@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.10.11
+// @version      2023.11.29
 // @author       srsutherland
 // @description  A collection of tools for hacking websites and data to make javascript more convenient
 // @match        *://*/*
@@ -224,6 +224,16 @@
             return this.includes(item)
         }
 
+        // Return a Set of the unique values in the array
+        Array.prototype.asSet = function () {
+            return new Set(this)
+        }
+
+        // As above, but return an Array
+        Array.prototype.unique = function () {
+            return [...new Set(this)]
+        }
+
         // Sorting aliases
         Array.prototype.sortAscending = function () { return this.sort(SRS.sorts.asc) }
         Array.prototype.sortDescending = function () { return this.sort(SRS.sorts.desc) }
@@ -247,6 +257,13 @@
         HTMLCollection.prototype.toArray = function () {
             return Array.from(this);
         };
+
+        // Get the hrefs of all links in a NodeList or HTMLCollection
+        const hrefs = function () {
+            return this.toArray().map(a => a?.href);
+        }
+        NodeList.prototype.hrefs = hrefs;
+        HTMLCollection.prototype.hrefs = hrefs;
 
         /////////////////////////
         //// Object Methods /////
