@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.11.29
+// @version      2023.12.06
 // @author       srsutherland
-// @description  A collection of tools for hacking websites and data to make javascript more convenient
+// @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
 // @icon         https://avatars.githubusercontent.com/u/12262958?v=4
 // @grant        none
@@ -144,6 +144,19 @@
         document.body.appendChild(downloadAnchorNode); // required for firefox
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
+    }
+
+    SRS.style = function (css) {
+        // look for style#srs-css
+        let style = document.querySelector("style#srs-css");
+        if (!style) {
+            style = document.createElement("style");
+            style.id = "srs-css";
+            document.head.appendChild(style);
+        } else {
+            style.textContent += "\n/* *** */\n";
+        }
+        style.textContent += css;
     }
 
     SRS.range = function* (start, stop, step=1) {
