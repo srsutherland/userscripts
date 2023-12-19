@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.12.06
+// @version      2023.12.19
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -159,6 +159,45 @@
         style.textContent += css;
     }
 
+    /**
+     * Set the max-width of an element and center it
+     * @param {Element} element 
+     * @param {string} width - CSS width value (default: "35em")
+     */
+    SRS.maxWidth = function(element, width="35em") {
+        if (typeof width === "number") {
+            width = `${width}em`
+        }
+        element.style.maxWidth = width;
+        element.style.marginLeft = "auto";
+        element.style.marginRight = "auto";
+    }
+
+    /**
+     * Return the best guess for the page's main main text element
+     * @returns {Element} - The element guessed to be the main article
+     */
+    SRS.guessMainArticle = function () {
+        // If there's an article element, use that
+        const article = document.querySelector("article");
+        if (article) {
+            return article;
+        }
+        // Next, try the element with the most paragraphs
+        const paragraphs = [...document.querySelectorAll("p")];
+        const grouped = paragraphs.reduce((acc, item) => {
+            const key = item.parentElement
+            if (!acc.has(key)) {
+                acc.set(key, [])
+            }
+            acc.get(key).push(item)
+            return acc
+        }, new Map())
+        const elementWithMostPs = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length)[0][0]
+        elementWithMostPs.maxWidth = (width) => SRS.maxWidth(elementWithMostPs, width)
+        return elementWithMostPs
+    }
+
     SRS.range = function* (start, stop, step=1) {
         if (stop === undefined) {
             stop = start;
@@ -219,6 +258,22 @@
                 acc[key].push(item)
                 return acc
             }, {})
+        }
+
+        /**
+         * Returns an Map that groups the members of the calling array by the result of the callback
+         * @param {Function} callback - Callback function which returns the key to group by
+         * @returns {Map}
+         */
+        Array.prototype.groupByAsMap = function (callback) {
+            return this.reduce((acc, item) => {
+                const key = callback(item)
+                if (!acc.has(key)) {
+                    acc.set(key, [])
+                }
+                acc.get(key).push(item)
+                return acc
+            }, new Map())
         }
 
         // Callback must return pair of [key, value]
