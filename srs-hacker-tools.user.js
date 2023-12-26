@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.12.19
+// @version      2023.12.25
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -278,11 +278,20 @@
 
         // Callback must return pair of [key, value]
         Array.prototype.objectFromEntries = function (callback) {
+            if (callback === undefined) {
+                return Object.fromEntries(this)
+            }
             return Object.fromEntries(this.map(callback))
         }
 
         // As above, but callback returns key; value unchanged
         Array.prototype.keyBy = function (callback) {
+            if (typeof callback === "string") {
+                const key = callback
+                callback = item => item[key]
+            } else if (typeof callback !== "function") {
+                throw new TypeError("Array.keyBy() requires a callback function or key string")
+            }
             return this.objectFromEntries(item => [callback(item), item])
         }
 
