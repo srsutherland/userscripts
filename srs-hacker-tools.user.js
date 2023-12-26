@@ -459,6 +459,12 @@
                 yield i;
             }
         };
+
+        // Log string in a chain
+        String.log = function() {
+            console.log(this);
+            return this;
+        }
     }
 
     window.srs = SRS;
