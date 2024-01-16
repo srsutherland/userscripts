@@ -24,6 +24,7 @@
 
     SRS.fileSafeDatestring = (date) => (date || new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
 
+    // Modified from https://stackoverflow.com/a/30800715
     SRS.download = (text, filename, autodate=true) => {
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
         const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
@@ -42,6 +43,7 @@
         downloadAnchorNode.remove();
     }
 
+    // Modified from https://stackoverflow.com/a/30800715
     SRS.downloadJSON = (exportObj, filename, autodate=true) => {
         if (filename === undefined) {
             filename = "download";
@@ -63,6 +65,7 @@
         downloadAnchorNode.remove();
     }
 
+    // Modified from https://stackoverflow.com/a/67531239
     SRS.getJsonUpload = async () => {
         const inputFileElem = document.createElement('input');
         inputFileElem.setAttribute('type', 'file');
@@ -146,6 +149,7 @@
         downloadAnchorNode.remove();
     }
 
+    // https://stackoverflow.com/a/46118025
     SRS.copyToClipboard = function (text) {
         var dummy = document.createElement("textarea");
         // to avoid breaking orgain page when copying more words
