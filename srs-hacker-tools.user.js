@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2023.12.25
+// @version      2024.01.16
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -144,6 +144,19 @@
         document.body.appendChild(downloadAnchorNode); // required for firefox
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
+    }
+
+    SRS.copyToClipboard = function (text) {
+        var dummy = document.createElement("textarea");
+        // to avoid breaking orgain page when copying more words
+        // cant copy when adding below this code
+        // dummy.style.display = 'none'
+        document.body.appendChild(dummy);
+        //Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
+        dummy.value = text;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
     }
 
     SRS.style = function (css) {
@@ -469,10 +482,23 @@
             }
         };
 
-        // Log string in a chain
-        String.log = function() {
+        // Log object in a chain
+        Object.prototype.log = function() {
             console.log(this);
             return this;
+        }
+        
+        // Log string in a chain
+        String.prototype.log = function() {
+            // Need toString() or it logs as a String object
+            console.log(this.toString());
+            return this;
+        }
+
+        // Copy string to clipboard
+        String.prototype.copy = function() {
+            SRS.copyToClipboard(this)
+            return this
         }
     }
 
