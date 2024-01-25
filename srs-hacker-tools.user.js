@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2024.01.16
+// @version      2024.01.24
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -22,7 +22,8 @@
                 ).length === 4)
     }
 
-    SRS.fileSafeDatestring = (date) => (date || new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
+    SRS.fileSafeDatestring = (date) => 
+        (date || new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
 
     // Modified from https://stackoverflow.com/a/30800715
     SRS.download = (text, filename, autodate=true) => {
@@ -81,12 +82,24 @@
         return JSON.parse(fileText);
     }
 
+    /**
+     * Output an element's outerHTML as an indented, opinionated-format string.
+     * @param {Element} element - html element to stringify 
+     * @param {number} indent - (opt) spaces per indent level; defaults to 2 
+     * @param {number} indentLevel - (opt) recursive indent level; leave it at 0
+     * @returns string
+     */
     SRS.elementToString = function elementToString(element, indent = 2, indentLevel = 0) {
+        if (element === undefined || element === null || !(element instanceof Element)) {
+            throw new TypeError(`elementToString: param "element" must be of type Element`)
+        }
         let output = '';
         const padding = ' '.repeat(indent * indentLevel);
     
-        // Clone the element and get its outer HTML, then split to get opening and closing tags
-        const [openingTag, closingTag] = element.cloneNode().outerHTML.split(/(?=<\/)/); // lookahead trick
+        // Clone the element and get its outer HTML...
+        const outerHTML = element.cloneNode().outerHTML
+        // ...then split to get opening and closing tags
+        const [openingTag, closingTag] = outerHTML.split(/(?=<\/)/); // lookahead trick
     
         const computedStyle = window.getComputedStyle(element);
         let isInline = computedStyle.display === 'inline';
@@ -105,9 +118,11 @@
             // Otherwise, process child nodes recursively with increased indentation
             output += padding + openingTag
             element.childNodes.forEach(child => {
-                if (child.nodeType === 1) {  // Element node
+                if (child.nodeType === 1) {  
+                    // Element node
                     output += '\n' + elementToString(child, indent, indentLevel + 1);
-                } else if (child.nodeType === 3 && child.nodeValue.trim()) {  // Text node with non-whitespace content
+                } else if (child.nodeType === 3 && child.nodeValue.trim()) {  
+                    // Text node with non-whitespace content
                     output += '\n' + padding + ' '.repeat(indent) + child.nodeValue.trim();
                 }
             });
@@ -152,13 +167,10 @@
     // https://stackoverflow.com/a/46118025
     SRS.copyToClipboard = function (text) {
         var dummy = document.createElement("textarea");
-        // to avoid breaking orgain page when copying more words
-        // cant copy when adding below this code
-        // dummy.style.display = 'none'
         document.body.appendChild(dummy);
-        //Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
         dummy.value = text;
         dummy.select();
+        // execCommand is deprecated; TODO look into alternative
         document.execCommand("copy");
         document.body.removeChild(dummy);
     }
@@ -450,7 +462,10 @@
         Promise.prototype.text = function () {
             return this.then(response => {
                 if (!(response instanceof Response)) {
-                    throw new TypeError("Promise.text() requires a Response object (was previous item in chain a fetch?)");
+                    throw new TypeError(
+                        "Promise.text() requires a Response object" +
+                        "(was previous item in chain a fetch?)"
+                    );
                 }
                 return response.text()
             });
@@ -460,7 +475,10 @@
         Promise.prototype.json = function () {
             return this.then(response => {
                 if (!(response instanceof Response)) {
-                    throw new TypeError("Promise.json() requires a Response object (was previous item in chain a fetch?)");
+                    throw new TypeError(
+                        "Promise.json() requires a Response object" +
+                        "(was previous item in chain a fetch?)"
+                    );
                 }
                 return response.json()
             });
