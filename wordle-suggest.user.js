@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2024.02.22.a
+// @version      2024.02.22.b
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -96,7 +96,7 @@
         // Return a count of each letter in the list
         count() {
             const counts = {}
-            this.forEach(w => [...w].forEach(l => counts[l] = (counts[l] || 0) + 1))
+            this.forEach(w => [...w].forEach(l => {counts[l] = (counts[l] || 0) + 1}))
             return counts
         }
     }
