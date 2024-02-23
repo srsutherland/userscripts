@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2023.06.14
+// @version      2024.02.22
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -32,11 +32,18 @@
 
     // Letter pairs that don't appear in English words
     const impossiblePairs = [
+        // Impossible at any position
         /b[fgnpqvx]/i, /c[bdfgjpqvx]/i, /d[cfkpqx]/i, /f[bcghkmnpqvwxz]/i, /g[bcfjkpqtvxz]/i,
         /h[bfghjkqvxz]/i, /j[bcfgklmpqstvxz]/i, /k[cdgjmpqxz]/i, /l[hqrx]/i, /m[cgjqwx]/i,
         /p[cfkmnqvx]/i, /q[b-egj-npqrtv-z]/i, /r[jx]/i, /s[fjrvx]/i, /t[dfgjpqvx]/i,
         /u[u]/i, /v[bcfjkmpqtwxz]/i, /w[jqvwx]/i, /x[cdghjkqsvwxz]/i, /y[hjqy]/i, /z[bcdfgjknp-twx]/i,
-        /[hjklmqrwxz]{3}/i
+        // Impossible three in a row
+        /[hjklmqrwxz]{3}/i,
+        // Impossible at the start
+        /^b[cjkmstz]/i, /^c[ckms]/i, /^d[dglmntv]/i, /^f[dfst]/i, /^g[dgms]/i, 
+        /^h[cdlmnprst]/i, /^i[ejquwy]/i, /^j[djrwy]/i, /^k[fkt]/i, /^l[bcdfgjkmnpstvz]/i, /^m[dfkl]/i,
+        /^n[bcfhlnpqtvwxz]/i, /^p[bdgjp]/i, /^q[fhs]/i, /^r[bcdfgklmnp-tvwz]/i, /^s[bgsz]/i, /^t[bcklmnt]/i, 
+        /^u[acefijoqw-z]/i, /^v[dghnsv]/i, /^w[bcdfgklmnpstz]/i, /^x[abfilmnptu]/i, /^y[gknpvwxz]/i, /^z[mvz]/i
     ]
     const isNotImpossible = (w) => !impossiblePairs.some(p => (w.match(p)))
     
