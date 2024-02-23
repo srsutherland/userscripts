@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wordle Suggester
 // @namespace    https://srsutherland.dev
-// @version      2024.02.22
+// @version      2024.02.22.a
 // @description  Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
 // @author       srsutherland
 // @match        https://www.nytimes.com/games/wordle/index.html
@@ -17,7 +17,7 @@
     const $$ = (s) => Array.from(document.querySelectorAll(s))
 
     const noWordleBotPaywall = () => {
-        if (window.location.match("wordle-bot.html")) {
+        if (window.location.href.match("wordle-bot.html")) {
             $('#site-content').style.position = "unset"
             // above won't work if the page is still loading, so put it in head > style
             document.head.innerHTML += `<style id="noWordleBotPaywall">#site-content { position: unset !important; }</style>`
