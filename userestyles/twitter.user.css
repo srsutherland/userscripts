@@ -1,0 +1,15 @@
+@-moz-document domain("twitter.com"), domain("*.twitter.com"), domain("x.com") {
+    *[aria-label="Timeline: Trending now"],
+    *[aria-label="Subscribe to Premium"],
+    *[aria-label="Premium"],
+    *[aria-label="Grok"]
+    {
+        display: none !important;
+    }
+    
+    *[aria-label="Profile"]
+    {
+        background-color:#9933ff6b;
+        border-radius: 10px
+    }
+}
