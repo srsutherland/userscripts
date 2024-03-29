@@ -1,3 +1,15 @@
+/* ==UserStyle==
+@name           Twitter Annoyances
+@version        2024.03.29
+@description    Make the twitter sidebar suck less
+@preprocessor   stylus
+
+ -- AUTHOR STUFF --
+@namespace      srsutherland
+@author         srsutherland
+@homepageURL    https://github.com/srsutherland/userscripts
+==/UserStyle== */
+
 @-moz-document domain("twitter.com"), domain("*.twitter.com"), domain("x.com") {
     *[aria-label="Timeline: Trending now"],
     *[aria-label="Subscribe to Premium"],
@@ -10,6 +22,12 @@
     *[aria-label="Profile"]
     {
         background-color:#9933ff6b;
+        border-radius: 10px
+    }
+    
+    *[aria-label="X"]
+    {
+        background-color:#3399ff6b;
         border-radius: 10px
     }
 }
