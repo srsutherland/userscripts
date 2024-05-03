@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RPGBOT 5e.tools linker
 // @namespace    http://srsutherland.dev
-// @version      2022.01.01
+// @version      2024.05.03
 // @description  Make feature ratings on rpgbot.net link to a search for the thing on 5e.tools
 // @author       srsutherland
 // @match        https://rpgbot.net/dnd5/*
@@ -15,7 +15,7 @@
     const rating_spans = document.querySelectorAll(".rating-blue, .rating-green, .rating-orange, .rating-red");
     for (const span of rating_spans) {
         const child = span.childNodes[0];
-        const href = "https://5e.tools/search.html?" + escape(child.textContent.trim());
+        const href = "https://5e.tools/search.html?q=" + escape(child.textContent.trim());
         const a = document.createElement("a");
         a.href = href;
         a.appendChild(child);
