@@ -11,10 +11,11 @@
 ==/UserStyle== */
 
 @-moz-document domain("twitter.com"), domain("*.twitter.com"), domain("x.com") {
-    *[aria-label="Timeline: Trending now"],
-    *[aria-label="Subscribe to Premium"],
-    *[aria-label="Premium"],
-    *[aria-label="Grok"]
+    *[role="navigation"] *[aria-label="Subscribe to Premium"],
+    *[role="navigation"] *[aria-label="Premium"],
+    *[role="navigation"] *[aria-label="Grok"],
+    *[aria-label="Trending"] *[aria-label="Timeline: Trending now"],
+    a[href^="/i/premium_sign_up"]
     {
         display: none !important;
     }
