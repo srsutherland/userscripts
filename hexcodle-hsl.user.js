@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Hexcodle HSL
 // @namespace    https://srutherland.dev
-// @version      2024.07.15
+// @version      2024.07.24
 // @description  Show HSL values for each guess you make on hexcodle mini
 // @author       srsutherland
 // @match        https://www.hexcodle.com/mini
+// @match        https://www.hexcodle.com/mini/archive/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hexcodle.com
 // @grant        none
 // ==/UserScript==
@@ -66,8 +67,33 @@
     }
 
     const hsl_html = (hex) => {
-        const [h, s, l] = rgbToHsl(...hexToRgb(hex));
-        return `<div class="hslv"><div>H: ${h}</div><div>S: ${s}%</div><div>L: ${l}%</div></div>`;
+        const rgb = hexToRgb(hex);
+        const [h, s, l] = rgbToHsl(...rgb);
+        //return `<div class="hslv"><div>H: ${h}</div><div>S: ${s}%</div><div>L: ${l}%</div></div>`;
+        const bg = "width:15px;height:15px;background-color:"
+        const hue_bg = bg + `hsl(${h}, 100%, 50%)`
+        const sat_bg = bg + `hsl(${h}, ${s}%, 50%)`
+        const lum_bg = bg + `hsl(${h}, 0%, ${l}%)`
+        const table = `
+            <table class="hslv">
+                <tr>
+                    <td>H:</td>
+                    <td>${h}&deg;</td>
+                    <td><div style="${hue_bg}"></div></td>
+                </tr>
+                <tr>
+                    <td>S:</td>
+                    <td>${s}%</td>
+                    <td><div style="${sat_bg}"></div></td>
+                </tr>
+                <tr>
+                    <td>L:</td>
+                    <td>${l}%</td>
+                    <td><div style="${lum_bg}"></div></td>
+                </tr>
+            </table>
+        `
+        return table
     }
 
     const annotate = () => {
