@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Hexcodle HSL
 // @namespace    https://srutherland.dev
-// @version      2024.07.24
+// @version      2024.09.19
 // @description  Show HSL values for each guess you make on hexcodle mini
 // @author       srsutherland
 // @match        https://www.hexcodle.com/mini
@@ -66,30 +66,78 @@
         ];
     }
 
+    function rgbToHwb(r, g, b) {
+        // Normalize RGB values to the [0, 1] range
+        const red = r / 255;
+        const green = g / 255;
+        const blue = b / 255;
+    
+        const max = Math.max(red, green, blue);
+        const min = Math.min(red, green, blue);
+        const delta = max - min;
+    
+        let hue;
+    
+        // Calculate hue
+        if (delta === 0) {
+            hue = 0;
+        } else if (max === red) {
+            hue = ((green - blue) / delta) % 6;
+        } else if (max === green) {
+            hue = (blue - red) / delta + 2;
+        } else {
+            hue = (red - green) / delta + 4;
+        }
+    
+        hue = Math.round(hue * 60);
+        if (hue < 0) hue += 360;
+    
+        // Calculate whiteness and blackness
+        const whiteness = min;
+        const blackness = 1 - max;
+    
+        // Convert whiteness and blackness to percentages
+        return [
+            hue,                           // Hue in degrees [0, 360)
+            Math.round(whiteness * 100),   // Whiteness as a percentage [0, 100]
+            Math.round(blackness * 100)    // Blackness as a percentage [0, 100]
+        ];
+    }
+    
+
     const hsl_html = (hex) => {
         const rgb = hexToRgb(hex);
         const [h, s, l] = rgbToHsl(...rgb);
+        const [h2, w, b] = rgbToHwb(...rgb);
         //return `<div class="hslv"><div>H: ${h}</div><div>S: ${s}%</div><div>L: ${l}%</div></div>`;
-        const bg = "width:15px;height:15px;background-color:"
+        const bg = "min-width:15px;height:15px;background-color:"
         const hue_bg = bg + `hsl(${h}, 100%, 50%)`
         const sat_bg = bg + `hsl(${h}, ${s}%, 50%)`
         const lum_bg = bg + `hsl(${h}, 0%, ${l}%)`
+        const wht_bg = bg + `hwb(${h2} ${w}% 0%)`
+        const blk_bg = bg + `hwb(${h2} 0% ${b}%)`
         const table = `
             <table class="hslv">
                 <tr>
                     <td>H:</td>
                     <td>${h}&deg;</td>
-                    <td><div style="${hue_bg}"></div></td>
+                    <td colspan="2"><div style="${hue_bg}"></div></td>
                 </tr>
                 <tr>
                     <td>S:</td>
                     <td>${s}%</td>
                     <td><div style="${sat_bg}"></div></td>
+                    <td><div style="${wht_bg}"></div></td>
+                    <td>${w}%</td>
+                    <td>:W</td>
                 </tr>
                 <tr>
                     <td>L:</td>
                     <td>${l}%</td>
                     <td><div style="${lum_bg}"></div></td>
+                    <td><div style="${blk_bg}"></div></td>
+                    <td>${b}%</td>
+                    <td>:B</td>
                 </tr>
             </table>
         `
