@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2024.01.24
+// @version      2024.09.20
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -11,6 +11,9 @@
 
 (function() {
     const SRS = {};
+
+    SRS.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+    SRS.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
     // List all js global variables used by site (not all defined!)
     // https://stackoverflow.com/a/52693392/2443695
