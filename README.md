@@ -2,7 +2,7 @@
 
 Browser userscripts for ~~Greasemonkey~~ [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/). Install links go to the raw *.user.js* files.
 
-## Sean's hacker tools
+## Sean's hacker (bodge) tools
 
 Install: [Github](https://github.com/srsutherland/userscripts/raw/master/srs-hacker-tools.user.js)
 
@@ -13,6 +13,12 @@ A collection of functions and modifications to JS collections to make the langua
 Install: [Github](https://github.com/srsutherland/userscripts/raw/master/reddit-context.user.js) - [Greasy Fork](https://greasyfork.org/en/scripts/407164-reddit-context)
 
 Automatically add context to reddit permalinks
+
+## Archive Redirect
+
+Install: [Github](https://github.com/srsutherland/userscripts/raw/master/archive-redirect.user.js)
+
+Redirect error pages to the internet archive
 
 ## Wikipedia Drug invert
 
@@ -35,9 +41,3 @@ Links all the feature/spell/etc ratings directly to a query for them on 5e.tools
 Install: [Github](https://github.com/srsutherland/userscripts/raw/master/wordle-suggest.user.js)
 
 Automatically generate a list of letter combinations that fit a provided pattern from the remaining wordle letters
-
-## CGPT response saver
-
-Install: [Github](https://github.com/srsutherland/userscripts/raw/master/CGPT-response-save.user.js)
-
-Helps you conveniently collect and display outputs (even those that OpenAI doesn't want you to generate) when playing around with prompts in ChatGPT.
