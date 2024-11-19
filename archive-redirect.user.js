@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive Redirect
 // @namespace    http://srsutherland.dev
-// @version      2024.11.11
+// @version      2024.11.19
 // @author       srsutherland
 // @description  Redirect error pages to the internet archive
 // @match        *://*/*
@@ -70,6 +70,18 @@
                 '503',
                 '403',
             ];
+            // These sites might give false positives because they *discuss* errors
+            const whitelist_domains = [
+                'github.com',
+                'stackoverflow.com',
+                'serverfault.com',
+                'superuser.com',
+                'youtube.com',
+                'reddit.com',
+            ];
+            if (whitelist_domains.some(domain => window.location.href.includes(domain))) {
+                return false;
+            }
             return possible_errors.some(error => title.includes(error));
         }
 
