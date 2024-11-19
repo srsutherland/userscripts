@@ -14,7 +14,7 @@ Install: [Github](https://github.com/srsutherland/userscripts/raw/master/reddit-
 
 Automatically add context to reddit permalinks
 
-## Archive Redirect
+## Internet Archive Redirect
 
 Install: [Github](https://github.com/srsutherland/userscripts/raw/master/archive-redirect.user.js)
 

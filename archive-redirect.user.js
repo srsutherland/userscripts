@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive Redirect
 // @namespace    http://srsutherland.dev
-// @version      2024.11.19
+// @version      2024.11.19.1
 // @author       srsutherland
 // @description  Redirect error pages to the internet archive
 // @match        *://*/*
@@ -46,7 +46,10 @@
         }
 
         async redirect_to_archive() {
+            const hourglass_emoji = '⏳';
             console.log('Redirecting to Archive');
+            this.redirect_button.innerText += ` ${hourglass_emoji}`;
+            this.always_button.innerText += ` ${hourglass_emoji}`;
             const archive_url = await this.latest_archive();
             console.log('Redirecting to ', archive_url);
             window.location = archive_url;
@@ -147,7 +150,7 @@
                     padding: 1em;
                     margin: 1em;
                     border: none;
-                    background-color: red;
+                    background-color: #f33; /* red */
                     color: white;
                     cursor: pointer;
                 }
@@ -158,10 +161,11 @@
             const container = document.createElement('div');
             container.classList.add('archive-redirect-container');
 
-            const button = document.createElement('button');
-            button.innerText = 'Redirect to Archive';
-            button.classList.add('archive-redirect-button');
-            button.addEventListener('click', () => this.redirect_to_archive());
+            const redirect_button = document.createElement('button');
+            redirect_button.innerText = 'Redirect to Archive';
+            redirect_button.classList.add('archive-redirect-button');
+            redirect_button.addEventListener('click', () => this.redirect_to_archive());
+            this.redirect_button = redirect_button;
 
             const always_button = document.createElement('button');
             always_button.innerText = 'Always Redirect to Archive';
@@ -170,8 +174,9 @@
                 this.set_always_redirect();
                 this.redirect_to_archive();
             });
+            this.always_button = always_button;
 
-            container.appendChild(button);
+            container.appendChild(redirect_button);
             container.appendChild(always_button);
             body.appendChild(container);
         }
