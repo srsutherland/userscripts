@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive Redirect
 // @namespace    http://srsutherland.dev
-// @version      2024.11.20
+// @version      2024.11.20.1
 // @author       srsutherland
 // @description  Redirect error pages to the internet archive
 // @match        *://*/*
@@ -9,7 +9,7 @@
 // @grant        none
 // ==/UserScript==
 
-(function() {
+(function () {
     class ArchiveRedirect {
         constructor() {
             this.run();
@@ -65,9 +65,9 @@
         is_error_in_title() {
             const title = document.title;
             const possible_errors = [
-                '404', 
+                '404',
                 //'Error', 
-                'Not Found', 
+                'Not Found',
                 'Page Not Found',
                 '500',
                 '503',
@@ -91,7 +91,7 @@
         }
 
         cloudflare_error() {
-            const cf_error = document.querySelector('.cf-error-details');
+            const cf_error = document.querySelector('#cf-error-details');
             return cf_error != null;
         }
 
@@ -104,8 +104,8 @@
         }
 
         is_bad_state() {
-            const trigger =  
-                this.is_error_in_title() || 
+            const trigger =
+                this.is_error_in_title() ||
                 this.cloudflare_error() ||
                 this.is_blocked();
             return trigger;
@@ -121,7 +121,14 @@
         }
 
         get_always_redirect() {
-            return localStorage.getItem('always_redirect');
+            const value = localStorage.getItem('always_redirect');
+            if (value == 'true') {
+                return true;
+            }
+            if (value == 'false') {
+                return false;
+            }
+            return value;
         }
 
         set_always_redirect(value = true) {
@@ -134,9 +141,11 @@
             }
             this.latest_archive();
             if (this.get_always_redirect() == true) {
+                console.log('"Always Redirect" is set');
                 this.redirect_to_archive();
             }
             if (this.referrer_is_hugger()) {
+                console.log(`Referrer ${document.referrer} is a known hugger`);
                 this.redirect_to_archive();
             }
             // else, create two buttons
