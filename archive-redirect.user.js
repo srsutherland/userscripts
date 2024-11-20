@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive Redirect
 // @namespace    http://srsutherland.dev
-// @version      2024.11.19.1
+// @version      2024.11.20
 // @author       srsutherland
 // @description  Redirect error pages to the internet archive
 // @match        *://*/*
@@ -66,7 +66,7 @@
             const title = document.title;
             const possible_errors = [
                 '404', 
-                'Error', 
+                //'Error', 
                 'Not Found', 
                 'Page Not Found',
                 '500',
@@ -75,6 +75,8 @@
             ];
             // These sites might give false positives because they *discuss* errors
             const whitelist_domains = [
+                'google.com',
+                'wikipedia.org',
                 'github.com',
                 'stackoverflow.com',
                 'serverfault.com',
@@ -88,6 +90,11 @@
             return possible_errors.some(error => title.includes(error));
         }
 
+        cloudflare_error() {
+            const cf_error = document.querySelector('.cf-error-details');
+            return cf_error != null;
+        }
+
         is_blocked() {
             const title = document.title;
             const possible_titles = [
@@ -99,6 +106,7 @@
         is_bad_state() {
             const trigger =  
                 this.is_error_in_title() || 
+                this.cloudflare_error() ||
                 this.is_blocked();
             return trigger;
         }
