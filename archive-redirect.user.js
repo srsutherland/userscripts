@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive Redirect
 // @namespace    http://srsutherland.dev
-// @version      2024.11.20.1
+// @version      2024.11.20.2
 // @author       srsutherland
 // @description  Redirect error pages to the internet archive
 // @match        *://*/*
@@ -48,8 +48,7 @@
         async redirect_to_archive() {
             const hourglass_emoji = '⏳';
             console.log('Redirecting to Archive');
-            this.redirect_button.innerText += ` ${hourglass_emoji}`;
-            this.always_button.innerText += ` ${hourglass_emoji}`;
+            this.append_to_buttons(' ' + hourglass_emoji);
             const archive_url = await this.latest_archive();
             console.log('Redirecting to ', archive_url);
             window.location = archive_url;
@@ -87,7 +86,7 @@
             if (whitelist_domains.some(domain => window.location.href.includes(domain))) {
                 return false;
             }
-            return possible_errors.some(error => title.includes(error));
+            return possible_errors.some(error => title.toLowerCase().includes(error.toLowerCase()));
         }
 
         cloudflare_error() {
@@ -149,6 +148,10 @@
                 this.redirect_to_archive();
             }
             // else, create two buttons
+            this.draw_ui();
+        }
+
+        draw_ui() {
             const head = document.querySelector('head');
             const styles = document.createElement('style');
             styles.id = 'archive-redirect-styles';
@@ -196,6 +199,13 @@
             container.appendChild(redirect_button);
             container.appendChild(always_button);
             body.appendChild(container);
+        }
+
+        append_to_buttons(text) {
+            const buttons = document.querySelectorAll('.archive-redirect-button');
+            buttons.forEach(button => {
+                button.innerText += text;
+            });
         }
     }
 
