@@ -1,15 +1,17 @@
 // ==UserScript==
 // @name         Sean's Really Slick Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2024.09.20
+// @version      2024.09.20.t
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
 // @icon         https://avatars.githubusercontent.com/u/12262958?v=4
+// @tag          utilities
 // @grant        none
 // ==/UserScript==
 
 (function() {
+    // The longer this goes, the more I realize I'm just reimplementing lodash piecemeal
     const SRS = {};
 
     SRS.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
