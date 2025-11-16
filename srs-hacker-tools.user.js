@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Sean's Really Slick Hacker Tools
+// @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2024.09.20.t
+// @version      2025.11.15.doc
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -17,20 +17,42 @@
     SRS.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
     SRS.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-    // List all js global variables used by site (not all defined!)
-    // https://stackoverflow.com/a/52693392/2443695
+    /**
+     * Get a list of all global variables in the current window
+     * (not all defined!).
+     * 
+     * (i.e., non-function, writable, enumerable, and configurable)
+     * @see https://stackoverflow.com/a/52693392/2443695
+     * @returns {string[]} - An array of global variable names
+     */
     SRS.globals = () => {
-        return Object.keys(window).filter(x => typeof(window[x]) !== 'function' &&
-            Object.entries(
-                Object.getOwnPropertyDescriptor(window, x)).filter(e =>
-                ['value', 'writable', 'enumerable', 'configurable'].includes(e[0]) && e[1]
-                ).length === 4)
+        return Object.keys(window).filter(
+            // is a value which is writable, enumerable, and configurable
+            x => typeof(window[x]) !== 'function' && Object.entries(
+                    Object.getOwnPropertyDescriptor(window, x)
+                ).filter(
+                    e => ['value', 'writable', 'enumerable', 'configurable']
+                            .includes(e[0]) && e[1] === true
+                ).length === 4
+        )
     }
 
+    /**
+     * Get a file-safe date string for use in filenames.
+     * Uses the format YYYY-MM-DD-HHMM
+     * @param {Date} date - (opt) Date object; defaults to current date/time
+     * @returns {string} - A string like "2025-04-13-1530"
+     */
     SRS.fileSafeDatestring = (date) => 
         (date || new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
 
-    // Modified from https://stackoverflow.com/a/30800715
+    /**
+     * Download text as a file.
+     * @see modified from https://stackoverflow.com/a/30800715
+     * @param {string} text - The text to download
+     * @param {string} filename - Optional filename (without extension)
+     * @param {boolean} autodate - Append current datetime to filename? (default: true)
+     */
     SRS.download = (text, filename, autodate=true) => {
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
         const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
@@ -49,7 +71,13 @@
         downloadAnchorNode.remove();
     }
 
-    // Modified from https://stackoverflow.com/a/30800715
+    /**
+     * Download a JS object as a 2-space indented JSON file.
+     * @see modified from https://stackoverflow.com/a/30800715
+     * @param {Object} exportObj - The JSON object to download
+     * @param {string} filename - Optional filename (without extension)
+     * @param {boolean} autodate - Append the current datetime to filename? (default: true)
+     */
     SRS.downloadJSON = (exportObj, filename, autodate=true) => {
         if (filename === undefined) {
             filename = "download";
@@ -71,7 +99,11 @@
         downloadAnchorNode.remove();
     }
 
-    // Modified from https://stackoverflow.com/a/67531239
+    /**
+     * Upload a JSON file and parse its contents.
+     * @see modified from https://stackoverflow.com/a/67531239
+     * @returns {Promise<Object>} - The parsed JSON object.
+     */
     SRS.getJsonUpload = async () => {
         const inputFileElem = document.createElement('input');
         inputFileElem.setAttribute('type', 'file');
@@ -140,6 +172,14 @@
         return output;
     }
 
+    /**
+     * Download an element's HTML as a file.
+     * Uses `SRS.elementToString()` to format.
+     * @see {@link SRS.elementToString}
+     * @param {Element} element - The element to download
+     * @param {string} filename - The filename to download as (optional)
+     * @param {boolean} autodate - Whether to append the current date to the filename (default: true)
+     */
     SRS.downloadHtml = (element, filename, autodate=true) => {
         const datestring = SRS.fileSafeDatestring();
         if (filename === undefined) {
@@ -169,18 +209,28 @@
         downloadAnchorNode.remove();
     }
 
-    // https://stackoverflow.com/a/46118025
-    SRS.copyToClipboard = function (text) {
-        var dummy = document.createElement("textarea");
+    /**
+     * Copy text to clipboard
+     * @see https://stackoverflow.com/a/46118025
+     * @param {string} text - The text to copy
+     * @returns {string} - The original text (for chaining)
+     */
+    SRS.copyToClipboard = (text) => {
+        const dummy = document.createElement("textarea");
         document.body.appendChild(dummy);
         dummy.value = text;
         dummy.select();
         // execCommand is deprecated; TODO look into alternative
         document.execCommand("copy");
         document.body.removeChild(dummy);
+        return text;
     }
 
-    SRS.style = function (css) {
+    /** 
+     * Add lines of CSS to `<style id="srs-css">` in document head
+     * @param {string} css - The CSS to add
+     */
+    SRS.style = (css) => {
         // look for style#srs-css
         let style = document.querySelector("style#srs-css");
         if (!style) {
@@ -198,7 +248,7 @@
      * @param {Element} element 
      * @param {string} width - CSS width value (default: "35em")
      */
-    SRS.maxWidth = function(element, width="35em") {
+    SRS.maxWidth = (element, width="35em") => {
         if (typeof width === "number") {
             width = `${width}em`
         }
