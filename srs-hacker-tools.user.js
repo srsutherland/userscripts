@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2025.11.16
+// @version      2025.11.16.1
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -13,6 +13,10 @@
 (function() {
     // The longer this goes, the more I realize I'm just reimplementing lodash piecemeal
     const SRS = {};
+
+    // eslint-disable-next-line no-redeclare
+    /* global GM_info, unsafeWindow */
+    SRS.version = GM_info.script.version;
 
     SRS.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
     SRS.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -701,5 +705,46 @@
         }
     }
 
+    if (window.srs) {
+        // Already loaded from another script instance; compare semvers
+        // Can't parseint here because the final version part may have letters
+        const existingVersion = window.srs.version //.split('.');
+        const thisVersion = SRS.version //.split('.');
+        // first three are YYYY.MM.DD, then optional build/patch.
+        // Compare the date parts first,
+        // then iff equal, compare the build/patch part lexically, with undefined < defined
+        const compareVersions = (a, b) => {
+            if (a === b) { return 0 }
+            if (typeof a === 'string') { a = a.split('.') }
+            if (typeof b === 'string') { b = b.split('.') }
+            const [aY, aM, aD] = a.slice(0, 3).map(n => Number(n));
+            const [bY, bM, bD] = b.slice(0, 3).map(n => Number(n));
+            if (aY !== bY) { return aY - bY }
+            if (aM !== bM) { return aM - bM }
+            if (aD !== bD) { return aD - bD }
+            const aBuild = a[3];
+            const bBuild = b[3];
+            if (aBuild === undefined && bBuild === undefined) { return 0 }
+            if (aBuild === undefined) { return -1 }
+            if (bBuild === undefined) { return 1 }
+            if (aBuild === bBuild) { return 0 }
+            return aBuild > bBuild ? 1 : -1; // lexical compare
+        };
+
+        const isNewer = compareVersions(thisVersion, existingVersion) > 0;
+        
+
+        if (!isNewer) {
+            console.info(
+                `SRS version ${SRS.version} is not newer than existing version ${window.srs.version}.`
+            );
+            return;
+        }
+        console.info(
+            `SRS version ${SRS.version} is newer than existing version ${window.srs.version}. ` +
+            `Overriding existing SRS.`
+        );
+    }
     window.srs = SRS;
+    window.SRS = SRS;
 })();
