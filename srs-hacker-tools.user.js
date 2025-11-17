@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2025.11.15.doc
+// @version      2025.11.16
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -35,6 +35,23 @@
                             .includes(e[0]) && e[1] === true
                 ).length === 4
         )
+    }
+
+    /**
+     * Get the Chrome DevTools command history
+     * @returns {Array} - An array of console history entries
+     */
+    SRS.devtoolsHistory = () => {
+        const history = JSON.parse(localStorage.getItem('console-history'))
+        if (!history) {
+            console.warn("Open DevTools on this DevTools (ctrl+shift+j) and run:") 
+            console.warn(
+                `%cJSON.parse(localStorage.getItem('console-history'))`,
+                "background: rgba(120, 120, 120, 0.3); border: 1px solid darkgrey; padding: 4px;"
+            )
+            return []
+        }
+        return history
     }
 
     /**
@@ -280,6 +297,111 @@
         const elementWithMostPs = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length)[0][0]
         elementWithMostPs.maxWidth = (width) => SRS.maxWidth(elementWithMostPs, width)
         return elementWithMostPs
+    }
+
+    /**
+     * Set up a mutationobserver to collect unique children from a dynamic list as you scroll
+     * @param {Element} element - The element containing the dynamic list
+     * @param {Function} keyFunction - (opt) Function to map children to unique keys (defaults to outerHTML)
+     * @param {boolean} log - (opt) Whether to log collection to console (default: true)
+     * @returns {Map} - A Map collecting the elements by key
+     */
+    SRS.collect = (element, keyFunction, log=true) => {
+        if (!(element instanceof Element)) {
+            throw new TypeError("SRS.collect: param 'element' must be of type Element");
+        }
+        if (keyFunction === undefined) {
+            keyFunction = (el) => el.outerHTML;
+        } else if (typeof keyFunction !== "function") {
+            throw new TypeError("SRS.collect: param 'keyFunction' must be a function");
+        }
+
+        const collector = new Map();
+        SRS.collect._collectors.push(collector);
+
+        const firstLastKeys = [undefined, undefined];
+        const collectItem = (node) => {
+            const key = keyFunction(node);
+            if (key === undefined) {
+                console.warn("SRS.collect: keyFunction returned undefined for node:");
+                console.warn(node);
+                return;
+            }
+            collector.set(key, node);
+            if (firstLastKeys[0] === undefined) {
+                firstLastKeys[0] = key;
+            }
+            firstLastKeys[1] = key;
+        };
+        const announceCollection = () => {
+            if (!log) { return; }
+            let [firstKey, lastKey] = firstLastKeys;
+            // if keys are longer than 20 chars, replace with longkeynamepart[+length]
+            if (firstKey && firstKey.length > 20) {
+                firstKey = `${firstKey.slice(0, 15)}[+${firstKey.length-17}]`;
+            }
+            if (lastKey && lastKey.length > 20) {
+                lastKey = `${lastKey.slice(0, 15)}[+${lastKey.length-17}]`;
+            }
+            let append = `(${firstKey}...${lastKey})`;
+            firstLastKeys[0] = undefined;
+            firstLastKeys[1] = undefined;
+
+            console.log(`SRS.collect: Collected ${collector.size} items ${append}`);
+        };
+
+        // Collect existing children
+        element.childNodes.forEach(collectItem);
+        announceCollection();
+        // Collect future children
+        const observer = new MutationObserver((mutations) => {
+            const previousSize = collector.size;
+            for (const mutation of mutations) {
+                if (mutation.type === "childList") {
+                    for (const node of mutation.addedNodes) {
+                        const isElement = node.nodeType === Node.ELEMENT_NODE;
+                        const isDirectChild = node.parentElement === element;
+                        if (isElement && isDirectChild) {
+                            collectItem(node);
+                        }
+                    }
+                }
+            }
+            if (collector.size > previousSize) {
+                announceCollection();
+            }
+        });
+        observer.observe(element, { childList: true, subtree: true });
+        SRS.collect._observers.get(element)?.disconnect();
+        SRS.collect._observers.set(element, observer);
+        return collector;
+    }
+
+    // Internal map of element -> observer for SRS.collect
+    SRS.collect._observers = new Map();
+
+    // Internal array of collectors maps for SRS.collect, in order of creation
+    SRS.collect._collectors = new Array();
+
+    /**
+    * Stop `SRS.collect`ing
+    * @param {Element} element - (opt) The element to stop collecting for. 
+    *   If omitted, stops all observers
+    */
+    SRS.collect.stop = (element) => {
+        // if `element` is undefined, stop all observers
+        if (element === undefined) {
+            for (const [elem, observer] of SRS.collect._observers.entries()) {
+                observer.disconnect();
+                SRS.collect._observers.delete(elem);
+            }
+            return;
+        }
+        const observer = SRS.collect._observers.get(element);
+        if (observer) {
+            observer.disconnect();
+            SRS.collect._observers.delete(element);
+        }
     }
 
     SRS.range = function* (start, stop, step=1) {
