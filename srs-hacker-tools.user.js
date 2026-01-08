@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2025.11.16.1
+// @version      2026.01.08
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -69,56 +69,64 @@
 
     /**
      * Download text as a file.
-     * @see modified from https://stackoverflow.com/a/30800715
      * @param {string} text - The text to download
      * @param {string} filename - Optional filename (without extension)
      * @param {boolean} autodate - Append current datetime to filename? (default: true)
      */
     SRS.download = (text, filename, autodate=true) => {
-        const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
-        const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
+        const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2");
+
         if (filename === undefined) {
             filename = datestring;
-        } else {
-            if (autodate) {
-                filename += "-" + datestring;
-            }
+        } else if (autodate) {
+            filename += "-" + datestring;
         }
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href",     dataStr);
-        downloadAnchorNode.setAttribute("download", filename + ".txt");
-        document.body.appendChild(downloadAnchorNode); // required for firefox
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
+
+        const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = filename + ".txt";
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+    };
 
     /**
      * Download a JS object as a 2-space indented JSON file.
-     * @see modified from https://stackoverflow.com/a/30800715
      * @param {Object} exportObj - The JSON object to download
      * @param {string} filename - Optional filename (without extension)
      * @param {boolean} autodate - Append the current datetime to filename? (default: true)
      */
     SRS.downloadJSON = (exportObj, filename, autodate=true) => {
+        const datestring = (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2");
+
         if (filename === undefined) {
-            filename = "download";
+            filename = datestring;
         } else {
             if (filename.endsWith(".json")) {
                 filename = filename.slice(0, -5)
             }
+            if (autodate) {
+                filename += "-" + datestring;
+            }
         }
-        if (autodate) {
-            filename += "-" + (new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
-        }
-        const dataStr = "data:text/json;charset=utf-8," + 
-            encodeURIComponent(JSON.stringify(exportObj, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href",     dataStr);
-        downloadAnchorNode.setAttribute("download", filename + ".json");
-        document.body.appendChild(downloadAnchorNode); // required for firefox
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-    }
+        const json = JSON.stringify(exportObj, null, 2);
+        const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = filename + ".json";
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+    };
 
     /**
      * Upload a JSON file and parse its contents.
