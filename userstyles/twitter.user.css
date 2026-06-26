@@ -4,6 +4,10 @@
 @description    Make the twitter sidebar suck less
 @preprocessor   stylus
 
+@var color      profileHighlight  "Profile button color"     #9933ff6b
+@var color      homeHighlight     "Home button color"        #3399ff6b
+@var checkbox   hideWhoToFollow   "Hide 'Who to Follow'"     0
+
  -- AUTHOR STUFF --
 @namespace      srsutherland
 @author         srsutherland
@@ -23,16 +27,18 @@
     {
         display: none !important;
     }
-    
-    *[aria-label="Profile"]
-    {
-        background-color:#9933ff6b;
-        border-radius: 10px
+
+    if hideWhoToFollow {
+        *[data-testid="whoToFollowSspAd"] { display: none !important; }
     }
-    
-    *[aria-label="X"]
-    {
-        background-color:#3399ff6b;
-        border-radius: 10px
+
+    *[aria-label="Profile"] {
+        background-color: profileHighlight; /* Default: #9933ff6b (Purple) */
+        border-radius: 10px;
+    }
+
+    *[aria-label="X"] {
+        background-color: homeHighlight; /* Default: #3399ff6b (Blue) */
+        border-radius: 10px;
     }
 }
