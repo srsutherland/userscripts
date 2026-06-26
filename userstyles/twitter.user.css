@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Twitter Annoyances
-@version        2025.02.14
+@version        2026.06.25
 @description    Make the twitter sidebar suck less
 @preprocessor   stylus
 
@@ -15,7 +15,10 @@
     *[role="navigation"] *[aria-label="Premium"],
     *[role="navigation"] *[aria-label="Grok"],
     *[role="navigation"] *[aria-label="Verified Orgs"],
+    *[role="navigation"] *[aria-label="Creator Studio"],
     *[aria-label="Trending"] *[aria-label="Timeline: Trending now"],
+    *[aria-label="New posts are available. Push the period key to go to the them."],
+    /* *[data-testid="whoToFollowSspAd"], */ /* optional */
     a[href^="/i/premium_sign_up"]
     {
         display: none !important;
