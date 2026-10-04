@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Grok Download
 // @namespace    http://dragonfang.tech
-// @version      2026.09.10
+// @version      2026.10.03
 // @description  Download content from Grok.com
 // @author       dragonfang
 // @match        https://grok.com/*
@@ -125,119 +125,122 @@ const dateString = () => {
         .replace(/ (\d+):(\d+):\d+/, "-$1$2");
 };
 
-const _downloadDataStr = (text, mimeType, filename, ext) => {
-    const header = `data:${mimeType};charset=utf-8,`;
-    const dataStr = header + encodeURIComponent(text);
-    assert(filename !== undefined)
-    assert(ext !== undefined)
-    if (!ext.at(0) == ".") ext = "." + ext;
-    if (!filename.endsWith(ext)) {
-        filename += ext;
-    }
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", filename);
-    document.body.appendChild(downloadAnchorNode); 
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-};
-
 /**
- * Download text as a file.
- * @see modified from https://stackoverflow.com/a/30800715
- * @param {string} text - The text to download
- * @param {string} filename - Optional filename (without extension)
- * @param {boolean} autodate - Append datetime to filename? (default: true)
+ * Download data as a file.
+ * Usage: Download(text[, filename]).asMd([filename[, autodate]])
+ * @param {*} data - Text for asMd/asTxt, any JSON-serializable value for asJSON
+ * @param {string} filename - Optional filename (extension optional)
  */
-const downloadTxt = (text, filename, autodate=true) => {
-    if (filename === undefined) {
-        filename = dateString();
-    } else {
+// Proxy lets the class be called without `new`
+const Download = new Proxy(class Download {
+    constructor(data, filename) {
+        this.data = data;
+        this.filename = filename;
+    }
+
+    /**
+     * @param {string} filename - Optional; 
+     * @param {boolean} autodate - Append datetime to filename? (default: true)
+     */
+    asJSON(filename, autodate=true, indent=2) {
+        if (filename) this.filename = filename;
+        const jsonStr = JSON.stringify(this.data, null, indent);
+        this._normalizeFilename("json", autodate);
+        Download._save(jsonStr, "application/json", this.filename);
+    }
+
+    asMd(filename, autodate=true) {
+        if (filename) this.filename = filename;
+        this._normalizeFilename("md", autodate);
+        Download._save(this.data, "text/markdown", this.filename);
+    }
+
+    asTxt(filename, autodate=true) {
+        if (filename) this.filename = filename;
+        this._normalizeFilename("txt", autodate);
+        Download._save(this.data, "text/plain", this.filename);
+    }
+
+    static _save(text, mimeType, filenameWithExt) {
+        const blobType = mimeType + ";charset=utf-8";
+        const blob = new Blob([text], { type: blobType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filenameWithExt;
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+
+    _normalizeFilename(ext, autodate=true) {
+        if (ext && ext.at(0) !== ".") {
+            ext = "." + ext;
+        }
+        if (!this.filename) {
+            this.filename = dateString() + (ext || ".txt");
+            return;
+        }
         if (autodate) {
-            filename += "-" + dateString();
+            if (ext && this.filename.endsWith(ext)) {
+                this.filename = this.filename.slice(0, -ext.length);
+            }
+            this.filename += "-" + dateString();
+        }
+        if (ext && !this.filename.endsWith(ext)) {
+            this.filename += ext;
         }
     }
-    _downloadDataStr(text, "text/plain", filename, "txt");
-};
-
-/**
- * Download text as a file.
- * @see modified from https://stackoverflow.com/a/30800715
- * @param {string} text - The text to download
- * @param {string} filename - Optional filename (without extension)
- * @param {boolean} autodate - Append datetime to filename? (default: true)
- */
-const downloadMd = (text, filename, autodate=true) => {
-    if (filename === undefined) {
-        filename = dateString();
-    } else {
-        if (autodate) {
-            filename += "-" + dateString();
-        }
-    }
-    _downloadDataStr(text, "text/plain", filename, "md");
-};
-
-/**
- * Download a JS object as a 2-space indented JSON file.
- * @see modified from https://stackoverflow.com/a/30800715
- * @param {Object} exportObj - The JSON object to download
- * @param {string} filename - Optional filename (without extension)
- * @param {boolean} autodate - Append datetime to filename? (default: true)
- */
-const downloadJSON = (exportObj, filename, autodate=true) => {
-    if (filename === undefined) {
-        filename = "download";
-    } else {
-        if (filename.endsWith(".json")) {
-            filename = filename.slice(0, -5)
-        }
-    }
-    if (autodate) {
-        filename += "-" + dateString()
-    }
-    const jsonStr = JSON.stringify(exportObj, null, 2);
-    _downloadDataStr(jsonStr, "text/json", filename, "json");
-};
+}, {
+    apply: (target, thisArg, args) => new target(...args),
+});
 
 // Add a floating button to trigger raw json and markdown downloads
 const addDownloadButtons = () => {
     const buttonContainer = document.createElement('div');
-    buttonContainer.style.position = 'fixed';
-    buttonContainer.style.bottom = '10px';
-    buttonContainer.style.right = '10px';
-    buttonContainer.style.zIndex = '1000';
+    Object.assign(buttonContainer.style, {
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px',
+        zIndex: '1000',
+    });
 
-    const downloadJsonButton = document.createElement('button');
-    downloadJsonButton.innerHTML = '&#x2B07;Raw';
-    downloadJsonButton.title = "Download Raw JSON";
-    downloadJsonButton.onclick = async () => {
-        const threadData = await fetchGrokConversationData();
-        const title = document.title || "grok-thread";
-        if (threadData) {
-            downloadJSON(threadData, title);
-        } else {
-            alert("Failed to fetch Grok thread data.");
-        }
-    };
+    const down_arrow = '&#x2B07;'; 
 
-    const downloadMdButton = document.createElement('button');
-    // Should be {down arrow}Md
-    downloadMdButton.innerHTML = '&#x2B07;Md';
-    downloadMdButton.title = "Download as Markdown";
-    downloadMdButton.onclick = async () => {
-        const thread = await getGrokThread();
-        const title = document.title || "grok-thread";
-        if (thread) {
-            const markdown = formatGrokThreadAsMarkdown(thread);
-            downloadMd(markdown, title);
-        } else {
-            alert("Failed to fetch Grok thread data.");
-        }
-    };
+    const downloadJsonButton = Object.assign(
+        document.createElement('button'), {
+        innerHTML: down_arrow + 'Raw',
+        title: "Download Raw JSON",
+        onclick: async () => {
+            const threadData = await fetchGrokConversationData();
+            const title = document.title || "grok-thread";
+            if (threadData) {
+                Download(threadData).asJSON(title);
+            } else {
+                alert("Failed to fetch Grok thread data.");
+            }
+        },
+    });
 
-    buttonContainer.appendChild(downloadJsonButton);
-    buttonContainer.appendChild(downloadMdButton);
+    const downloadMdButton = Object.assign(
+        document.createElement('button'), {
+        innerHTML: down_arrow + 'Md',
+        title: "Download as Markdown",
+        onclick: async () => {
+            const thread = await getGrokThread();
+            const title = document.title || "grok-thread";
+            if (thread) {
+                const markdown = formatGrokThreadAsMarkdown(thread);
+                Download(markdown).asMd(title);
+            } else {
+                alert("Failed to fetch Grok thread data.");
+            }
+        },
+    });
+
+    buttonContainer.append(downloadJsonButton, downloadMdButton);
     document.body.appendChild(buttonContainer);
 };
 
