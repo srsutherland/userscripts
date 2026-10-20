@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2026.01.08
+// @version      2026.10.20.0
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -438,6 +438,36 @@
     SRS.sorts.ascByKey = (key) => (a, b) => a[key] - b[key];
     SRS.sorts.descByKey = (key) => (a, b) => b[key] - a[key];
 
+    // Callback functions for Array.prototype.filter() and Iterator.prototype.filter()
+    SRS.filters = {};
+
+    SRS.filters.in = (B) => B.has ? (a) => B.has(a) : (a) => B.includes(a);
+    SRS.filters.notIn = (B) => B.has ? (a) => !B.has(a) : (a) => !B.includes(a);
+
+    SRS.filters.unique = () => {
+        const seen = new Set();
+        return x => !seen.has(x) && (seen.add(x), true)
+    }
+    SRS.filters.uniqueBy = (f) => {
+        const seen = new Set();
+        return x => {
+            const k = f(x); 
+            return !seen.has(k) && (seen.add(k), true); 
+        };
+    }
+
+    SRS.filters.dropRepeats = () => {
+        let prev = Symbol();  // fresh symbol: can't equal any input
+        return x => x !== prev && ((prev = x), true);
+    };
+    SRS.filters.dropRepeatsBy = (f) => {
+        let prev = Symbol();
+        return x => { 
+            const k = f(x); 
+            return k !== prev && ((prev = k), true);
+        };
+    };
+
     // A bunch of things which modify the prototype of Array and Object (and others)
     SRS.apply = () => {
         ///////////////////////
@@ -533,7 +563,7 @@
         Array.prototype.sortAscending = function () { return this.sort(SRS.sorts.asc) }
         Array.prototype.sortDescending = function () { return this.sort(SRS.sorts.desc) }
         Array.prototype.sortAscBy = function (f) { return this.sort(SRS.sorts.ascBy(f)) }
-        Array.prototype.sortDescgBy = function (f) { return this.sort(SRS.sorts.descBy(f)) }
+        Array.prototype.sortDescBy = function (f) { return this.sort(SRS.sorts.descBy(f)) }
         Array.prototype.sortAscByKey = function (key) { return this.sort(SRS.sorts.ascByKey(key)) }
         Array.prototype.sortDescByKey = function (key) { return this.sort(SRS.sorts.descByKey(key)) }
 
