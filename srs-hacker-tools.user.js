@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2026.10.20.1
+// @version      2026.10.20.2
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -11,6 +11,7 @@
 // ==/UserScript==
 
 (function() {
+    'use strict'
     // The longer this goes, the more I realize I'm just reimplementing lodash piecemeal
     const SRS = {};
 
@@ -31,13 +32,14 @@
      */
     SRS.globals = () => {
         return Object.keys(window).filter(
-            // is a value which is writable, enumerable, and configurable
-            x => typeof(window[x]) !== 'function' && Object.entries(
-                    Object.getOwnPropertyDescriptor(window, x)
-                ).filter(
-                    e => ['value', 'writable', 'enumerable', 'configurable']
-                            .includes(e[0]) && e[1] === true
-                ).length === 4
+            k => {
+                const d = Object.getOwnPropertyDescriptor(window, k);
+                // is a value which is writable, enumerable, and configurable
+                const isWECV = d && d.writable && d.enumerable && d.configurable && 'value' in d;
+                // non-null, non-function value
+                const isValue = isWECV && d.value != null && typeof d.value !== 'function';
+                return isValue;
+            }
         )
     }
 
@@ -66,7 +68,8 @@
      */
     SRS.fileSafeDatestring = (date) => 
         (date || new Date()).toLocaleString('sv').replace(/ (\d+):(\d+):\d+/, "-$1$2")
-
+    
+    // Note: The following functions are intentionally self-contained to allow for easy reuse without dependencies
     /**
      * Download text as a file.
      * @param {string} text - The text to download
@@ -137,15 +140,14 @@
         const inputFileElem = document.createElement('input');
         inputFileElem.setAttribute('type', 'file');
         inputFileElem.setAttribute('accept', '.json');
-        const inputChanged = new Promise(
-            resolve => inputFileElem.addEventListener('change', resolve, false)
-        );
+        const picked = new Promise(resolve => {
+            inputFileElem.addEventListener("change", () => resolve(inputFileElem.files[0]));
+            inputFileElem.addEventListener("cancel", () => resolve(undefined));
+        });
         inputFileElem.click();
-        const fileChangeEvent = await inputChanged;
-        const { files } = fileChangeEvent.target;
-        if (!files) { return }
-        const fileText = await files[0].text();
-        return JSON.parse(fileText);
+        const file = await picked;
+        if (!file) return;
+        return JSON.parse(await file.text());
     }
 
     /**
@@ -215,7 +217,7 @@
             if (element.id) {
                 filename = element.id;
             } else if (element.classList.length > 0) {
-                filename = element.classList.join(".")
+                filename = [...element.classList].join(".")
             }
         }
         if (filename === undefined) {
@@ -350,10 +352,10 @@
             let [firstKey, lastKey] = firstLastKeys;
             // if keys are longer than 20 chars, replace with longkeynamepart[+length]
             if (firstKey && firstKey.length > 20) {
-                firstKey = `${firstKey.slice(0, 15)}[+${firstKey.length-17}]`;
+                firstKey = `${firstKey.slice(0, 15)}[+${firstKey.length-15}]`;
             }
             if (lastKey && lastKey.length > 20) {
-                lastKey = `${lastKey.slice(0, 15)}[+${lastKey.length-17}]`;
+                lastKey = `${lastKey.slice(0, 15)}[+${lastKey.length-15}]`;
             }
             let append = `(${firstKey}...${lastKey})`;
             firstLastKeys[0] = undefined;
@@ -481,7 +483,9 @@
 
     SRS.pipe = Symbol('srs.pipe');
     Object.defineProperty(Object.prototype, SRS.pipe, {
-        value: function (f, ...args) { return f(this, ...args); },
+        value: function (f, ...args) {
+            return f(this, ...args); 
+        },
         writable: true, configurable: true,   // enumerable defaults to false
     });
 
@@ -663,12 +667,8 @@
 
         // Generic "PipeTo" function
         // Takes a function and applies it to the object
-        // If given a string, it will look for a function with that name in the object's constructor
-        Object.prototype.pipeTo = function (func) {
-            if (typeof func === "string") {
-                func = this.constructor.prototype[func];
-            }
-            return func(this);
+        Object.prototype.pipeTo = function (f, ...args) {
+            return f(this, ...args); 
         };
 
         /////////////////////////
@@ -769,21 +769,8 @@
         // Compare the date parts first,
         // then iff equal, compare the build/patch part lexically, with undefined < defined
         const compareVersions = (a, b) => {
-            if (a === b) { return 0 }
-            if (typeof a === 'string') { a = a.split('.') }
-            if (typeof b === 'string') { b = b.split('.') }
-            const [aY, aM, aD] = a.slice(0, 3).map(n => Number(n));
-            const [bY, bM, bD] = b.slice(0, 3).map(n => Number(n));
-            if (aY !== bY) { return aY - bY }
-            if (aM !== bM) { return aM - bM }
-            if (aD !== bD) { return aD - bD }
-            const aBuild = a[3];
-            const bBuild = b[3];
-            if (aBuild === undefined && bBuild === undefined) { return 0 }
-            if (aBuild === undefined) { return -1 }
-            if (bBuild === undefined) { return 1 }
-            if (aBuild === bBuild) { return 0 }
-            return aBuild > bBuild ? 1 : -1; // lexical compare
+            // This just works
+            return a.localeCompare(b, "en", { numeric: true });
         };
 
         const isNewer = compareVersions(thisVersion, existingVersion) > 0;
