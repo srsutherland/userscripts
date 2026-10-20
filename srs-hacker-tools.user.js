@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2026.10.20.0
+// @version      2026.10.20.1
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -426,6 +426,17 @@
         }
     }
 
+    // generic helper functions
+    SRS.f = {};
+
+    SRS.f.id = x => x;
+    SRS.f.not = f => (...args) => !f(...args);
+    SRS.f.by = by => {
+        if (typeof by === "function") return by;
+        if (["string", "number", "symbol"].includes(typeof by)) return o => o[by];
+        throw new TypeError(`Expected a function or property key, got ${typeof by}`);
+    };
+
     // Callback functions for Array.prototype.sort()
     SRS.sorts = {};
 
@@ -442,7 +453,7 @@
     SRS.filters = {};
 
     SRS.filters.in = (B) => B.has ? (a) => B.has(a) : (a) => B.includes(a);
-    SRS.filters.notIn = (B) => B.has ? (a) => !B.has(a) : (a) => !B.includes(a);
+    SRS.filters.notIn = (B) => SRS.f.not(SRS.filters.in(B));
 
     SRS.filters.unique = () => {
         const seen = new Set();
@@ -468,6 +479,12 @@
         };
     };
 
+    SRS.pipe = Symbol('srs.pipe');
+    Object.defineProperty(Object.prototype, SRS.pipe, {
+        value: function (f, ...args) { return f(this, ...args); },
+        writable: true, configurable: true,   // enumerable defaults to false
+    });
+
     // A bunch of things which modify the prototype of Array and Object (and others)
     SRS.apply = () => {
         ///////////////////////
@@ -480,7 +497,7 @@
          * @returns {Array}
          */
         Array.prototype.notIn = function (B) {
-            return this.filter(a => B.has ? !B.includes(a) : !B.has(a))
+            return this.filter(SRS.filters.notIn(B))
         }
 
         /**
@@ -489,7 +506,7 @@
          * @returns {Array}
          */
         Array.prototype.in = function (B) {
-            return this.filter(a => B.has ? B.includes(a) : B.has(a))
+            return this.filter(SRS.filters.in(B))
         }
 
         /**
