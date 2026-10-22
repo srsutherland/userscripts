@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Sean's Really Swell Hacker Tools
 // @namespace    http://srsutherland.dev
-// @version      2026.10.20.2
+// @version      2026.10.21
 // @author       srsutherland
 // @description  A collection of tools for "hacking" websites and data to make javascript more convenient
 // @match        *://*/*
@@ -16,8 +16,39 @@
     const SRS = {};
 
     // eslint-disable-next-line no-redeclare
-    /* global GM_info, unsafeWindow */
+    /* global GM_info, unsafeWindow */ // For Tampermonkey editor
     SRS.version = GM_info.script.version;
+
+    if (window.srs) {
+        // Already loaded from another script instance; compare semvers
+        // Can't parseint here because the final version part may have letters
+        const existingVersion = window.srs.version
+        const thisVersion = SRS.version
+        // first three are YYYY.MM.DD, then optional build/patch.
+        // Compare the date parts first,
+        // then iff equal, compare the build/patch part lexically, with undefined < defined
+        const compareVersions = (a, b) => {
+            if (a === b) return 0;
+            if (a === undefined) return -1;
+            if (b === undefined) return 1;
+            // This just works
+            return a.localeCompare(b, "en", { numeric: true });
+        };
+
+        const isNewer = compareVersions(thisVersion, existingVersion) > 0;
+        
+
+        if (!isNewer) {
+            console.info(
+                `SRS version ${SRS.version} is not newer than existing version ${window.srs.version}.`
+            );
+            return;
+        }
+        console.info(
+            `SRS version ${SRS.version} is newer than existing version ${window.srs.version}. ` +
+            `Overriding existing SRS.`
+        );
+    }
 
     SRS.alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
     SRS.ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -95,7 +126,7 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 0);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
     /**
@@ -128,7 +159,7 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 0);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
     /**
@@ -293,9 +324,11 @@
      * @returns {Element} - The element guessed to be the main article
      */
     SRS.guessMainArticle = function () {
+        const setMaxWidthFunc = (e) => (width) => SRS.maxWidth(e, width)
         // If there's an article element, use that
         const article = document.querySelector("article");
         if (article) {
+            article.setMaxWidth = setMaxWidthFunc(article);
             return article;
         }
         // Next, try the element with the most paragraphs
@@ -308,13 +341,17 @@
             acc.get(key).push(item)
             return acc
         }, new Map())
+        if (grouped.size === 0) {
+            throw new Error("SRS.guessMainArticle: could not guess main article");
+        }
         const elementWithMostPs = [...grouped.entries()].sort((a, b) => b[1].length - a[1].length)[0][0]
-        elementWithMostPs.maxWidth = (width) => SRS.maxWidth(elementWithMostPs, width)
+        elementWithMostPs.setMaxWidth = setMaxWidthFunc(elementWithMostPs);
         return elementWithMostPs
     }
 
     /**
      * Set up a mutationobserver to collect unique children from a dynamic list as you scroll
+     * Stop with @see SRS.collect.stop(element)
      * @param {Element} element - The element containing the dynamic list
      * @param {Function} keyFunction - (opt) Function to map children to unique keys (defaults to outerHTML)
      * @param {boolean} log - (opt) Whether to log collection to console (default: true)
@@ -335,6 +372,9 @@
 
         const firstLastKeys = [undefined, undefined];
         const collectItem = (node) => {
+            const isElement = node.nodeType === Node.ELEMENT_NODE;
+            if (!isElement) { return; }
+
             const key = keyFunction(node);
             if (key === undefined) {
                 console.warn("SRS.collect: keyFunction returned undefined for node:");
@@ -419,12 +459,19 @@
     }
 
     SRS.range = function* (start, stop, step=1) {
+        if (step === 0) throw new RangeError("SRS.range: step cannot be 0");
         if (stop === undefined) {
             stop = start;
             start = 0;
         }
-        for (let i = start; i < stop; i += step) {
-            yield i;
+        if (step > 0) {
+            for (let i = start; i < stop; i += step) {
+                yield i;
+            }
+        } else {
+            for (let i = start; i > stop; i += step) {
+                yield i;
+            }
         }
     }
 
@@ -489,20 +536,23 @@
         writable: true, configurable: true,   // enumerable defaults to false
     });
 
+    SRS.warnOnce = (message) => {
+        let warned = false;
+        return () => {
+            if (!warned) {
+                console.warn(message);
+                warned = true;
+            }
+        };
+    };
+
     // A bunch of things which modify the prototype of Array and Object (and others)
     SRS.apply = () => {
+        // This method has side effects
+
         ///////////////////////
         //// Array Methods ////
         ///////////////////////
-
-        /**
-         * Returns a new Array containing the members of the calling array which are not in B
-         * @param {Array} B
-         * @returns {Array}
-         */
-        Array.prototype.notIn = function (B) {
-            return this.filter(SRS.filters.notIn(B))
-        }
 
         /**
          * Returns a new Array containing the members of the calling array which are also in B
@@ -511,6 +561,15 @@
          */
         Array.prototype.in = function (B) {
             return this.filter(SRS.filters.in(B))
+        }
+
+        /**
+         * Returns a new Array containing the members of the calling array which are not in B
+         * @param {Array} B
+         * @returns {Array}
+         */
+        Array.prototype.notIn = function (B) {
+            return this.filter(SRS.filters.notIn(B))
         }
 
         /**
@@ -564,9 +623,10 @@
             return this.objectFromEntries(item => [callback(item), item])
         }
 
+        const arrayHasWarn = SRS.warnOnce("Arrays use Array.includes()")
         // Alias for when I forget which method goes to which collection because JS has no consistency
         Array.prototype.has = function (item) {
-            console.warn("Arrays use Array.includes()")
+            arrayHasWarn()
             return this.includes(item)
         }
 
@@ -760,33 +820,6 @@
         }
     }
 
-    if (window.srs) {
-        // Already loaded from another script instance; compare semvers
-        // Can't parseint here because the final version part may have letters
-        const existingVersion = window.srs.version //.split('.');
-        const thisVersion = SRS.version //.split('.');
-        // first three are YYYY.MM.DD, then optional build/patch.
-        // Compare the date parts first,
-        // then iff equal, compare the build/patch part lexically, with undefined < defined
-        const compareVersions = (a, b) => {
-            // This just works
-            return a.localeCompare(b, "en", { numeric: true });
-        };
-
-        const isNewer = compareVersions(thisVersion, existingVersion) > 0;
-        
-
-        if (!isNewer) {
-            console.info(
-                `SRS version ${SRS.version} is not newer than existing version ${window.srs.version}.`
-            );
-            return;
-        }
-        console.info(
-            `SRS version ${SRS.version} is newer than existing version ${window.srs.version}. ` +
-            `Overriding existing SRS.`
-        );
-    }
     window.srs = SRS;
     window.SRS = SRS;
 })();
