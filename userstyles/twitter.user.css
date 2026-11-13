@@ -1,12 +1,14 @@
 /* ==UserStyle==
 @name           Twitter Annoyances
-@version        2026.06.25
+@version        2026.10.20
 @description    Make the twitter sidebar suck less
 @preprocessor   stylus
 
-@var color      profileHighlight  "Profile button color"     #9933ff6b
-@var color      homeHighlight     "Home button color"        #3399ff6b
-@var checkbox   hideWhoToFollow   "Hide 'Who to Follow'"     0
+@var color      profileHighlight  'Profile button color'     #9933ff6b
+@var color      homeHighlight     'Home button color'        #3399ff6b
+@var checkbox   hideWhoToFollow   'Hide "Who to Follow"'     0
+@var checkbox   hideGrok          'Hide "Grok"'              0
+
 
  -- AUTHOR STUFF --
 @namespace      srsutherland
@@ -15,22 +17,42 @@
 ==/UserStyle== */
 
 @-moz-document domain("twitter.com"), domain("*.twitter.com"), domain("x.com") {
-    *[role="navigation"] *[aria-label="Subscribe to Premium"],
-    *[role="navigation"] *[aria-label="Premium"],
-    *[role="navigation"] *[aria-label="Grok"],
-    *[role="navigation"] *[aria-label="Verified Orgs"],
-    *[role="navigation"] *[aria-label="Creator Studio"],
-    *[aria-label="Trending"] *[aria-label="Timeline: Trending now"],
+    *[role="navigation"] {
+        /* Left sidebar */
+        *[aria-label="Subscribe to Premium"],
+        *[aria-label="Premium"],
+        *[aria-label="Verified Orgs"],
+        *[aria-label="Creator Studio"],
+        *[aria-label="Calls"],
+        *[aria-label="Money"]
+        {
+            display: none !important;
+        }
+
+        if hideGrok {
+            *[aria-label="Grok"] { display: none !important; }
+        }
+    }
+
+    *[aria-label="Trending"] {
+        /* right sidebar */
+        *[aria-label="Timeline: Trending now"],
+        a[href^="/i/nfl/game/"]
+        {
+            display: none !important;
+        }
+
+        if hideWhoToFollow {
+            *[data-testid="whoToFollowSspAd"] { display: none !important; }
+        }
+    }
+
     *[aria-label="New posts are available. Push the period key to go to the them."],
-    /* *[data-testid="whoToFollowSspAd"], */ /* optional */
     a[href^="/i/premium_sign_up"]
     {
         display: none !important;
     }
 
-    if hideWhoToFollow {
-        *[data-testid="whoToFollowSspAd"] { display: none !important; }
-    }
 
     *[aria-label="Profile"] {
         background-color: profileHighlight; /* Default: #9933ff6b (Purple) */
