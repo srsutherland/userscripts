@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Grok Download
 // @namespace    http://dragonfang.tech
-// @version      2026.10.03
+// @version      2026.11.12
 // @description  Download content from Grok.com
 // @author       dragonfang
 // @match        https://grok.com/*
@@ -240,8 +240,27 @@ const addDownloadButtons = () => {
         },
     });
 
-    buttonContainer.append(downloadJsonButton, downloadMdButton);
+    const removeLink = Object.assign(
+        document.createElement('button'), {
+        innerHTML: '✖',
+        title: "Remove Download Buttons",
+        onclick: () => {
+            document.body.removeChild(buttonContainer);
+        },
+    });
+
+    buttonContainer.append(downloadJsonButton, downloadMdButton, removeLink);
     document.body.appendChild(buttonContainer);
+
+    // Watch for when the url changes and hide this if it's grok.com/imagine
+    window.navigation.addEventListener('navigate', (event) => {
+        const url = new URL(event.destination.url);
+        if (url.pathname.startsWith('/imagine')) {
+            buttonContainer.style.display = 'none';
+        } else {
+            buttonContainer.style.display = null;
+        }
+    });
 };
 
 // Run the script
